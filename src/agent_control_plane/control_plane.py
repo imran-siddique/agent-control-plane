@@ -14,23 +14,23 @@ The main control plane that integrates all components:
 
 from typing import Dict, List, Optional, Any
 from datetime import datetime
-from agent_kernel import (
+from .agent_kernel import (
     AgentKernel, AgentContext, ExecutionRequest, ExecutionResult,
     ActionType, PermissionLevel, PolicyRule, ExecutionStatus
 )
-from policy_engine import PolicyEngine, ResourceQuota, RiskPolicy, create_default_policies
-from execution_engine import (
+from .policy_engine import PolicyEngine, ResourceQuota, RiskPolicy, create_default_policies
+from .execution_engine import (
     ExecutionEngine, ExecutionContext, SandboxLevel
 )
-from example_executors import (
+from .example_executors import (
     file_read_executor, code_execution_executor, api_call_executor
 )
-from shadow_mode import ShadowModeExecutor, ShadowModeConfig, ReasoningStep
-from mute_agent import MuteAgentValidator, MuteAgentConfig
-from constraint_graphs import (
+from .shadow_mode import ShadowModeExecutor, ShadowModeConfig, ReasoningStep
+from .mute_agent import MuteAgentValidator, MuteAgentConfig
+from .constraint_graphs import (
     DataGraph, PolicyGraph, TemporalGraph, ConstraintGraphValidator
 )
-from supervisor_agents import SupervisorAgent, SupervisorNetwork
+from .supervisor_agents import SupervisorAgent, SupervisorNetwork
 
 
 class AgentControlPlane:

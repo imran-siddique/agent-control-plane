@@ -7,7 +7,7 @@ implementations that interface with real systems.
 """
 
 from typing import Dict, Any
-from execution_engine import ExecutionContext
+from .execution_engine import ExecutionContext
 
 
 def file_read_executor(parameters: Dict[str, Any], context: ExecutionContext) -> Any:

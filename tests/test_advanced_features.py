@@ -8,21 +8,21 @@ Unit tests for advanced Agent Control Plane features:
 
 import unittest
 from datetime import datetime, time
-from control_plane import AgentControlPlane, create_standard_agent
-from agent_kernel import ActionType, PermissionLevel
-from mute_agent import (
+from agent_control_plane import AgentControlPlane, create_standard_agent
+from agent_control_plane.agent_kernel import ActionType, PermissionLevel
+from agent_control_plane.mute_agent import (
     create_mute_sql_agent, create_mute_data_analyst,
     MuteAgentValidator, AgentCapability
 )
-from shadow_mode import (
+from agent_control_plane.shadow_mode import (
     ShadowModeExecutor, ShadowModeConfig,
     SimulationOutcome, add_reasoning_step
 )
-from constraint_graphs import (
+from agent_control_plane.constraint_graphs import (
     DataGraph, PolicyGraph, TemporalGraph,
     ConstraintGraphValidator, GraphNode, GraphNodeType
 )
-from supervisor_agents import (
+from agent_control_plane.supervisor_agents import (
     SupervisorAgent, SupervisorConfig,
     create_default_supervisor, ViolationType
 )

@@ -13,7 +13,7 @@ from typing import Any, Dict, List, Optional, Callable
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from enum import Enum
-from agent_kernel import ActionType, ExecutionStatus
+from .agent_kernel import ActionType, ExecutionStatus
 
 
 class ViolationType(Enum):

@@ -10,7 +10,7 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
 import time
-from agent_kernel import ExecutionRequest, ActionType
+from .agent_kernel import ExecutionRequest, ActionType
 
 
 class SandboxLevel(Enum):

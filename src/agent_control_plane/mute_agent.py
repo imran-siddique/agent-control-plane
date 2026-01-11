@@ -12,7 +12,7 @@ their defined constraints and return NULL/silence for out-of-scope requests.
 from typing import Any, Dict, Optional, List, Callable
 from dataclasses import dataclass, field
 from datetime import datetime
-from agent_kernel import ActionType, ExecutionRequest
+from .agent_kernel import ActionType, ExecutionRequest
 
 
 @dataclass

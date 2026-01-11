@@ -10,11 +10,11 @@ This module demonstrates:
 """
 
 from datetime import time
-from control_plane import AgentControlPlane, create_standard_agent
-from agent_kernel import ActionType, PermissionLevel
-from mute_agent import create_mute_sql_agent, create_mute_data_analyst
-from shadow_mode import add_reasoning_step
-from supervisor_agents import create_default_supervisor
+from agent_control_plane import AgentControlPlane, create_standard_agent
+from agent_control_plane.agent_kernel import ActionType, PermissionLevel
+from agent_control_plane.mute_agent import create_mute_sql_agent, create_mute_data_analyst
+from agent_control_plane.shadow_mode import add_reasoning_step
+from agent_control_plane.supervisor_agents import create_default_supervisor
 
 
 def example_mute_agent():

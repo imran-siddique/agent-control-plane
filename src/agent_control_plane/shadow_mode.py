@@ -16,7 +16,7 @@ from typing import Any, Dict, List, Optional, Tuple
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
-from agent_kernel import ExecutionRequest, ActionType, ExecutionStatus
+from .agent_kernel import ExecutionRequest, ActionType, ExecutionStatus
 
 
 class SimulationOutcome(Enum):

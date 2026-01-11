@@ -4,14 +4,14 @@ Example usage of the Agent Control Plane
 This demonstrates how to use the control plane to govern autonomous agents.
 """
 
-from control_plane import (
+from agent_control_plane import (
     AgentControlPlane,
     create_read_only_agent,
     create_standard_agent,
     create_admin_agent
 )
-from agent_kernel import ActionType, PermissionLevel
-from policy_engine import ResourceQuota, RiskPolicy
+from agent_control_plane.agent_kernel import ActionType, PermissionLevel
+from agent_control_plane.policy_engine import ResourceQuota, RiskPolicy
 
 
 def example_basic_usage():
