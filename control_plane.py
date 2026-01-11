@@ -6,6 +6,10 @@ The main control plane that integrates all components:
 - Policy Engine
 - Execution Engine
 - Audit System
+- Shadow Mode (simulation)
+- Mute Agent (capability-based)
+- Constraint Graphs (multi-dimensional)
+- Supervisor Agents (recursive governance)
 """
 
 from typing import Dict, List, Optional, Any
@@ -21,6 +25,12 @@ from execution_engine import (
 from example_executors import (
     file_read_executor, code_execution_executor, api_call_executor
 )
+from shadow_mode import ShadowModeExecutor, ShadowModeConfig, ReasoningStep
+from mute_agent import MuteAgentValidator, MuteAgentConfig
+from constraint_graphs import (
+    DataGraph, PolicyGraph, TemporalGraph, ConstraintGraphValidator
+)
+from supervisor_agents import SupervisorAgent, SupervisorNetwork
 
 
 class AgentControlPlane:
@@ -29,13 +39,49 @@ class AgentControlPlane:
     
     This is the primary interface for applications to interact with
     the control plane. It integrates all governance, safety, and
-    execution components.
+    execution components including:
+    - Shadow Mode for simulation
+    - Mute Agent for capability-based execution
+    - Constraint Graphs for multi-dimensional context
+    - Supervisor Agents for recursive governance
     """
     
-    def __init__(self, enable_default_policies: bool = True):
+    def __init__(
+        self,
+        enable_default_policies: bool = True,
+        enable_shadow_mode: bool = False,
+        enable_constraint_graphs: bool = False
+    ):
         self.kernel = AgentKernel()
         self.policy_engine = PolicyEngine()
         self.execution_engine = ExecutionEngine()
+        
+        # Shadow Mode for simulation
+        self.shadow_mode_enabled = enable_shadow_mode
+        self.shadow_executor = ShadowModeExecutor(ShadowModeConfig(enabled=enable_shadow_mode))
+        
+        # Mute Agent validators (per agent)
+        self.mute_validators: Dict[str, MuteAgentValidator] = {}
+        
+        # Constraint Graphs
+        self.constraint_graphs_enabled = enable_constraint_graphs
+        if enable_constraint_graphs:
+            self.data_graph = DataGraph()
+            self.policy_graph = PolicyGraph()
+            self.temporal_graph = TemporalGraph()
+            self.constraint_validator = ConstraintGraphValidator(
+                self.data_graph,
+                self.policy_graph,
+                self.temporal_graph
+            )
+        else:
+            self.data_graph = None
+            self.policy_graph = None
+            self.temporal_graph = None
+            self.constraint_validator = None
+        
+        # Supervisor Network
+        self.supervisor_network = SupervisorNetwork()
         
         # Register default executors
         self._register_default_executors()
@@ -75,30 +121,53 @@ class AgentControlPlane:
         agent_context: AgentContext,
         action_type: ActionType,
         parameters: Dict[str, Any],
-        execution_context: Optional[ExecutionContext] = None
+        execution_context: Optional[ExecutionContext] = None,
+        reasoning_chain: Optional[List[ReasoningStep]] = None
     ) -> Dict[str, Any]:
         """
         Execute an action on behalf of an agent
         
         This is the main entry point for agent actions. It goes through
         the complete governance pipeline:
-        1. Permission check (Kernel)
-        2. Policy validation (Policy Engine)
-        3. Risk assessment (Kernel)
-        4. Rate limiting (Policy Engine)
-        5. Execution (Execution Engine)
-        6. Audit logging (Kernel)
+        1. Mute Agent validation (if configured)
+        2. Permission check (Kernel)
+        3. Constraint Graph validation (if enabled)
+        4. Policy validation (Policy Engine)
+        5. Risk assessment (Kernel)
+        6. Rate limiting (Policy Engine)
+        7. Shadow Mode or Real Execution
+        8. Audit logging (Kernel)
         
         Args:
             agent_context: Context for the agent making the request
             action_type: Type of action to execute
             parameters: Parameters for the action
             execution_context: Optional execution context (sandboxing, timeouts, etc.)
+            reasoning_chain: Optional reasoning steps that led to this action
             
         Returns:
             Dictionary with execution results and metadata
         """
-        # 1. Submit request to kernel for permission check
+        # 1. Validate against Mute Agent capabilities (if configured)
+        if agent_context.agent_id in self.mute_validators:
+            validator = self.mute_validators[agent_context.agent_id]
+            # Create a temporary request for validation
+            temp_request = ExecutionRequest(
+                request_id="temp",
+                agent_context=agent_context,
+                action_type=action_type,
+                parameters=parameters,
+                timestamp=datetime.now()
+            )
+            is_valid, reason = validator.validate_request(temp_request)
+            if not is_valid:
+                return {
+                    "success": False,
+                    "error": reason,
+                    "status": "capability_mismatch"
+                }
+        
+        # 2. Submit request to kernel for permission check
         request = self.kernel.submit_request(agent_context, action_type, parameters)
         
         if request.status == ExecutionStatus.DENIED:
@@ -109,7 +178,19 @@ class AgentControlPlane:
                 "status": request.status.value
             }
         
-        # 2. Validate with policy engine
+        # 3. Validate against Constraint Graphs (if enabled)
+        if self.constraint_graphs_enabled and self.constraint_validator:
+            is_valid, violations = self.constraint_validator.validate_request(request)
+            if not is_valid:
+                return {
+                    "success": False,
+                    "error": f"Constraint graph violations: {', '.join(violations)}",
+                    "request_id": request.request_id,
+                    "status": "constraint_violation",
+                    "violations": violations
+                }
+        
+        # 4. Validate with policy engine
         is_valid, reason = self.policy_engine.validate_request(request)
         if not is_valid:
             return {
@@ -119,7 +200,7 @@ class AgentControlPlane:
                 "status": "policy_violation"
             }
         
-        # 3. Validate risk level
+        # 5. Validate risk level
         if not self.policy_engine.validate_risk(request, request.risk_score):
             return {
                 "success": False,
@@ -129,21 +210,36 @@ class AgentControlPlane:
                 "status": "risk_denied"
             }
         
-        # 4. Execute through execution engine
-        execution_result = self.execution_engine.execute(request, execution_context)
-        
-        # 5. Update kernel with execution result
-        if execution_result["success"]:
-            kernel_result = self.kernel.execute(request)
+        # 6. Execute in Shadow Mode or Real Mode
+        if self.shadow_mode_enabled:
+            # Shadow mode: simulate without executing
+            simulation = self.shadow_executor.execute_in_shadow(request, reasoning_chain)
             return {
                 "success": True,
-                "result": execution_result["result"],
+                "result": simulation.simulated_result,
                 "request_id": request.request_id,
-                "metrics": execution_result.get("metrics", {}),
-                "risk_score": request.risk_score
+                "status": "simulated",
+                "outcome": simulation.outcome.value,
+                "actual_impact": simulation.actual_impact,
+                "risk_score": request.risk_score,
+                "note": "This was executed in SHADOW MODE - no actual execution occurred"
             }
         else:
-            return execution_result
+            # Real execution
+            execution_result = self.execution_engine.execute(request, execution_context)
+            
+            # Update kernel with execution result
+            if execution_result["success"]:
+                kernel_result = self.kernel.execute(request)
+                return {
+                    "success": True,
+                    "result": execution_result["result"],
+                    "request_id": request.request_id,
+                    "metrics": execution_result.get("metrics", {}),
+                    "risk_score": request.risk_score
+                }
+            else:
+                return execution_result
     
     def add_policy_rule(self, rule: PolicyRule):
         """Add a custom policy rule"""
@@ -191,6 +287,80 @@ class AgentControlPlane:
         """Add default security policies"""
         for policy in create_default_policies():
             self.add_policy_rule(policy)
+    
+    # ===== New Methods for Advanced Features =====
+    
+    def enable_mute_agent(self, agent_id: str, config: MuteAgentConfig):
+        """
+        Enable Mute Agent mode for an agent.
+        
+        The agent will only execute actions that match its defined capabilities
+        and return NULL for out-of-scope requests.
+        """
+        self.mute_validators[agent_id] = MuteAgentValidator(config)
+    
+    def enable_shadow_mode(self, enabled: bool = True):
+        """
+        Enable or disable shadow mode for all executions.
+        
+        In shadow mode, actions are simulated but not actually executed.
+        """
+        self.shadow_mode_enabled = enabled
+        self.shadow_executor.config.enabled = enabled
+    
+    def get_shadow_simulations(self, agent_id: Optional[str] = None) -> List[Any]:
+        """Get shadow mode simulation log"""
+        return self.shadow_executor.get_simulation_log(agent_id)
+    
+    def get_shadow_statistics(self) -> Dict[str, Any]:
+        """Get statistics about shadow mode executions"""
+        return self.shadow_executor.get_statistics()
+    
+    def add_supervisor(self, supervisor: SupervisorAgent):
+        """Add a supervisor agent to monitor worker agents"""
+        self.supervisor_network.add_supervisor(supervisor)
+    
+    def run_supervision(self) -> Dict[str, List[Any]]:
+        """
+        Run a supervision cycle to check for violations.
+        
+        Returns violations detected by all supervisors.
+        """
+        execution_log = self.get_execution_history()
+        audit_log = self.get_audit_log()
+        return self.supervisor_network.run_supervision_cycle(execution_log, audit_log)
+    
+    def get_supervisor_summary(self) -> Dict[str, Any]:
+        """Get summary of supervisor network activity"""
+        return self.supervisor_network.get_network_summary()
+    
+    # Constraint Graph methods
+    
+    def add_data_table(self, table_name: str, schema: Dict[str, Any], metadata: Optional[Dict] = None):
+        """Add a database table to the data graph"""
+        if self.data_graph:
+            self.data_graph.add_database_table(table_name, schema, metadata)
+    
+    def add_data_path(self, path: str, access_level: str = "read", metadata: Optional[Dict] = None):
+        """Add a file path to the data graph"""
+        if self.data_graph:
+            self.data_graph.add_file_path(path, access_level, metadata)
+    
+    def add_policy_constraint(self, rule_id: str, name: str, applies_to: List[str], rule_type: str):
+        """Add a policy constraint to the policy graph"""
+        if self.policy_graph:
+            self.policy_graph.add_policy_rule(rule_id, name, applies_to, rule_type)
+    
+    def add_maintenance_window(self, window_id: str, start_time, end_time, blocked_actions: List[ActionType]):
+        """Add a maintenance window to the temporal graph"""
+        if self.temporal_graph:
+            self.temporal_graph.add_maintenance_window(window_id, start_time, end_time, blocked_actions)
+    
+    def get_constraint_validation_log(self) -> List[Dict[str, Any]]:
+        """Get log of constraint graph validations"""
+        if self.constraint_validator:
+            return self.constraint_validator.get_validation_log()
+        return []
 
 
 # Convenience functions for common operations
