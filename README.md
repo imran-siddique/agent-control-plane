@@ -52,11 +52,45 @@ The Agent Control Plane sits between the LLM (raw compute) and the execution env
 
 ## Quick Start
 
+### Installation
+
+```bash
+# Clone the repository
+git clone https://github.com/imran-siddique/agent-control-plane.git
+cd agent-control-plane
+
+# Install the package
+pip install -e .
+
+# Or install with development dependencies
+pip install -e ".[dev]"
+```
+
+### Project Structure
+
+```
+agent-control-plane/
+├── src/
+│   └── agent_control_plane/     # Main package source code
+│       ├── agent_kernel.py      # Core kernel functionality
+│       ├── control_plane.py     # Main control plane interface
+│       ├── policy_engine.py     # Policy enforcement
+│       ├── execution_engine.py  # Safe execution
+│       ├── constraint_graphs.py # Multi-dimensional context
+│       ├── shadow_mode.py       # Simulation mode
+│       ├── mute_agent.py        # Capability-based execution
+│       └── supervisor_agents.py # Recursive governance
+├── tests/                        # Test suite
+├── examples/                     # Example scripts
+├── docs/                         # Documentation
+└── README.md                     # This file
+```
+
 ### Basic Usage
 
 ```python
-from control_plane import AgentControlPlane, create_standard_agent
-from agent_kernel import ActionType
+from agent_control_plane import AgentControlPlane, create_standard_agent
+from agent_control_plane.agent_kernel import ActionType
 
 # Create the control plane
 control_plane = AgentControlPlane()
@@ -80,7 +114,7 @@ else:
 ### Permission Control
 
 ```python
-from agent_kernel import ActionType, PermissionLevel
+from agent_control_plane.agent_kernel import ActionType, PermissionLevel
 
 # Create custom permissions
 permissions = {
@@ -95,7 +129,7 @@ agent = control_plane.create_agent("restricted-agent", permissions)
 ### Rate Limiting
 
 ```python
-from policy_engine import ResourceQuota
+from agent_control_plane.policy_engine import ResourceQuota
 
 # Set strict quotas
 quota = ResourceQuota(
@@ -105,13 +139,13 @@ quota = ResourceQuota(
     max_concurrent_executions=2,
 )
 
-agent = control_plane.create_agent("rate-limited-agent", quota=quota)
+control_plane.policy_engine.set_quota("rate-limited-agent", quota)
 ```
 
 ### Custom Policies
 
 ```python
-from agent_kernel import PolicyRule
+from agent_control_plane.agent_kernel import PolicyRule
 import uuid
 
 def validate_safe_path(request):
@@ -128,18 +162,26 @@ rule = PolicyRule(
     priority=10
 )
 
-control_plane.add_policy_rule(rule)
+control_plane.policy_engine.add_custom_rule(rule)
 ```
 
-### Advanced Features
+## Examples
+
+Check out the `examples/` directory for more detailed examples:
+
+- **`getting_started.py`** - Step-by-step tutorial for beginners
+- **`basic_usage.py`** - Fundamental concepts and patterns
+- **`advanced_features.py`** - Shadow Mode, Mute Agent, etc.
+- **`use_cases.py`** - Real-world production scenarios
+- **`configuration.py`** - Different agent configurations
 
 #### The Mute Agent - Scale by Subtraction
 
 Create agents that know when to shut up and return NULL instead of hallucinating:
 
 ```python
-from mute_agent import create_mute_sql_agent
-from agent_kernel import ActionType, PermissionLevel
+from agent_control_plane.mute_agent import create_mute_sql_agent
+from agent_control_plane.agent_kernel import ActionType, PermissionLevel
 
 # Create a SQL agent that ONLY executes SELECT queries
 sql_config = create_mute_sql_agent("sql-bot")
@@ -231,7 +273,7 @@ control_plane.add_maintenance_window(
 Agents watching agents:
 
 ```python
-from supervisor_agents import create_default_supervisor
+from agent_control_plane.supervisor_agents import create_default_supervisor
 
 # Create worker agents
 agent1 = create_standard_agent(control_plane, "worker-1")
@@ -537,7 +579,74 @@ This is **systems engineering** for AI, not prompt engineering.
 
 ## Contributing
 
-Contributions are welcome! Please feel free to submit issues and pull requests.
+We welcome contributions! The Agent Control Plane is designed to be production-ready and contributor-friendly.
+
+### Getting Started
+
+1. Fork the repository
+2. Clone your fork: `git clone https://github.com/YOUR-USERNAME/agent-control-plane.git`
+3. Install in development mode: `pip install -e ".[dev]"`
+4. Create a branch: `git checkout -b feature/your-feature-name`
+
+### Running Tests
+
+```bash
+# Run all tests
+python -m unittest discover -s tests -p 'test_*.py' -v
+
+# Run specific test file
+python -m unittest tests/test_control_plane.py
+
+# Run specific test
+python -m unittest tests.test_control_plane.TestAgentKernel.test_create_agent_session
+```
+
+### Project Structure
+
+- `src/agent_control_plane/` - Main package source code
+- `tests/` - Test suite (unittest framework)
+- `examples/` - Example scripts and use cases
+- `docs/` - Documentation and guides
+- `.github/workflows/` - CI/CD configuration
+
+### Guidelines
+
+- Follow existing code style and patterns
+- Add tests for new features
+- Update documentation as needed
+- Keep changes focused and minimal
+- Write clear commit messages
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines.
+
+## Testing
+
+The project uses Python's built-in `unittest` framework. All tests are located in the `tests/` directory.
+
+### Test Coverage
+
+- **Core functionality tests**: `test_control_plane.py`
+- **Advanced features tests**: `test_advanced_features.py`
+
+Current test coverage: **31 tests** covering:
+- Agent creation and lifecycle
+- Permission management
+- Policy enforcement
+- Rate limiting
+- Shadow mode simulation
+- Mute agent capabilities
+- Constraint graphs
+- Supervisor agents
+- Audit logging
+
+## Documentation
+
+Comprehensive documentation is available in the `docs/` directory:
+
+- **[Quick Start Guide](docs/guides/QUICKSTART.md)** - Get up and running quickly
+- **[Implementation Guide](docs/guides/IMPLEMENTATION.md)** - Detailed implementation details
+- **[Philosophy](docs/guides/PHILOSOPHY.md)** - Core principles and design philosophy
+- **[Architecture](docs/architecture/architecture.md)** - System architecture overview
 
 ## License
 
