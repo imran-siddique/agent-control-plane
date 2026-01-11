@@ -4,13 +4,13 @@ Unit tests for the Agent Control Plane
 
 import unittest
 from datetime import datetime
-from control_plane import (
+from agent_control_plane import (
     AgentControlPlane,
     create_read_only_agent,
     create_standard_agent,
 )
-from agent_kernel import ActionType, PermissionLevel, PolicyRule
-from policy_engine import ResourceQuota
+from agent_control_plane.agent_kernel import ActionType, PermissionLevel, PolicyRule
+from agent_control_plane.policy_engine import ResourceQuota
 import uuid
 
 

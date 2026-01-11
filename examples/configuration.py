@@ -4,9 +4,9 @@ Configuration Examples for Agent Control Plane
 This file shows how to configure agents with different profiles.
 """
 
-from control_plane import AgentControlPlane
-from agent_kernel import ActionType, PermissionLevel, PolicyRule
-from policy_engine import ResourceQuota, RiskPolicy
+from agent_control_plane import AgentControlPlane
+from agent_control_plane.agent_kernel import ActionType, PermissionLevel, PolicyRule
+from agent_control_plane.policy_engine import ResourceQuota, RiskPolicy
 import uuid
 
 

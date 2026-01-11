@@ -18,7 +18,7 @@ from typing import Any, Dict, List, Optional, Set, Callable, Tuple
 from dataclasses import dataclass, field
 from datetime import datetime, time
 from enum import Enum
-from agent_kernel import ExecutionRequest, ActionType
+from .agent_kernel import ExecutionRequest, ActionType
 
 
 class GraphNodeType(Enum):
