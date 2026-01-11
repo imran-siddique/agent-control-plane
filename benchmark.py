@@ -170,12 +170,34 @@ class ControlPlaneAgent:
         # Create control plane with constraint enforcement
         self.control_plane = AgentControlPlane()
         
-        # Create a Mute Agent with SQL read-only capabilities
+        # Create a Mute Agent with SQL read-only and file read capabilities
         sql_capabilities = create_sql_agent_capabilities()
+        
+        # Add file read capability for safe paths
+        def validate_safe_file_read(request):
+            """Validate file reads are in safe directories"""
+            path = request.parameters.get('path', '')
+            return path.startswith('/data/') or path.startswith('./data/')
+        
+        file_read_capability = AgentCapability(
+            name="read_data_files",
+            description="Read files from /data directory",
+            action_types=[ActionType.FILE_READ],
+            parameter_schema={
+                "type": "object",
+                "properties": {
+                    "path": {"type": "string"}
+                },
+                "required": ["path"]
+            },
+            validator=validate_safe_file_read
+        )
+        
+        all_capabilities = sql_capabilities + [file_read_capability]
         
         mute_config = MuteAgentConfig(
             agent_id="benchmark-sql-agent",
-            capabilities=sql_capabilities,
+            capabilities=all_capabilities,
             strict_mode=True,
             null_response_message="NULL",
             enable_explanation=False
