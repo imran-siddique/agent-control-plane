@@ -258,9 +258,19 @@ class AgentKernel:
         return risk_weights.get(request.action_type, 0.5)
     
     def _dispatch_execution(self, request: ExecutionRequest) -> Any:
-        """Dispatch execution to appropriate handler (placeholder)"""
-        # In a real implementation, this would route to actual executors
-        return {"status": "simulated_execution", "action": request.action_type.value}
+        """
+        Dispatch execution to appropriate handler
+        
+        Note: This returns simulated execution results for demonstration purposes.
+        In production, this should route to actual ExecutionEngine handlers.
+        The Control Plane's execute_action() method uses the ExecutionEngine
+        directly for actual execution.
+        """
+        return {
+            "status": "simulated_execution",
+            "action": request.action_type.value,
+            "note": "Simulated result - use Control Plane for actual execution"
+        }
     
     def _get_required_permission_level(self, action_type: ActionType) -> PermissionLevel:
         """Get the minimum permission level required for an action type"""

@@ -12,11 +12,13 @@ from typing import Dict, List, Optional, Any
 from datetime import datetime
 from agent_kernel import (
     AgentKernel, AgentContext, ExecutionRequest, ExecutionResult,
-    ActionType, PermissionLevel, PolicyRule
+    ActionType, PermissionLevel, PolicyRule, ExecutionStatus
 )
 from policy_engine import PolicyEngine, ResourceQuota, RiskPolicy, create_default_policies
 from execution_engine import (
-    ExecutionEngine, ExecutionContext, SandboxLevel,
+    ExecutionEngine, ExecutionContext, SandboxLevel
+)
+from example_executors import (
     file_read_executor, code_execution_executor, api_call_executor
 )
 
@@ -99,7 +101,7 @@ class AgentControlPlane:
         # 1. Submit request to kernel for permission check
         request = self.kernel.submit_request(agent_context, action_type, parameters)
         
-        if request.status.value == "denied":
+        if request.status == ExecutionStatus.DENIED:
             return {
                 "success": False,
                 "error": "Request denied by kernel",

@@ -5,7 +5,7 @@ The Policy Engine enforces rules and constraints on agent behavior,
 including resource quotas, access controls, and risk management.
 """
 
-from typing import Dict, List, Optional, Callable, Any
+from typing import Dict, List, Optional, Callable, Any, Tuple
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from agent_kernel import ExecutionRequest, ActionType, PolicyRule
@@ -148,7 +148,7 @@ class PolicyEngine:
         
         return True
     
-    def validate_request(self, request: ExecutionRequest) -> tuple[bool, Optional[str]]:
+    def validate_request(self, request: ExecutionRequest) -> Tuple[bool, Optional[str]]:
         """
         Comprehensive validation of a request
         Returns (is_valid, reason_if_invalid)
