@@ -2,10 +2,17 @@
 
 A governance and management layer for autonomous AI agents. The Agent Control Plane treats the LLM as a raw compute component and provides a kernel-like layer for safe, controlled execution.
 
+## Philosophy: Scale by Subtraction
+
+**We need to stop treating the LLM as a magic box and start treating it as a raw compute component that requires a kernel.**
+
+In distributed systems, we don't ask a microservice nicely to respect a rate limit—we enforce it at the gateway. We don't ask a database query nicely not to drop a table—we enforce it via permissions. With AI agents, we need the same deterministic enforcement.
+
 ## Overview
 
-As we move from chatbots to autonomous agents—systems that can execute code, modify data, and trigger workflows—the biggest bottleneck isn't intelligence. It's governance. The Agent Control Plane solves this by providing:
+As we move from chatbots to autonomous agents—systems that can execute code, modify data, and trigger workflows—the biggest bottleneck isn't intelligence. It's **governance**. The Agent Control Plane solves this by providing:
 
+### Core Features
 - **Permission Management**: Fine-grained control over what agents can do
 - **Policy Enforcement**: Governance rules and compliance constraints
 - **Resource Management**: Quotas, rate limiting, and resource allocation
@@ -13,14 +20,22 @@ As we move from chatbots to autonomous agents—systems that can execute code, m
 - **Audit Logging**: Complete traceability for all agent actions
 - **Risk Assessment**: Automatic risk scoring and management
 
+### Advanced Features
+- **The Mute Agent**: Capability-based execution that returns NULL for out-of-scope requests instead of hallucinating
+- **Shadow Mode**: Simulation environment where agents think they're executing but actions are intercepted for validation
+- **Constraint Graphs**: Multi-dimensional context (Data, Policy, Temporal) acting as the "physics" of the agent's world
+- **Supervisor Agents**: Recursive governance with agents watching agents, bound by a constitution of code
+- **Reasoning Telemetry**: Complete trace of agent decision-making process
+
 ## Key Concepts
 
 ### The Problem
 
 Traditional LLM applications lack proper governance:
 - Agents have unrestricted access to execute dangerous actions
-- No rate limiting or resource quotas
-- Limited visibility into agent behavior
+- No deterministic enforcement of boundaries
+- Agents try to be "helpful" by hallucinating when they should return NULL
+- Limited visibility into agent reasoning and behavior
 - Difficult to enforce compliance requirements
 - Hard to debug and trace agent decisions
 
@@ -28,10 +43,12 @@ Traditional LLM applications lack proper governance:
 
 The Agent Control Plane sits between the LLM (raw compute) and the execution environment, providing:
 
-1. **Agent Kernel**: Central coordinator that mediates all agent actions
-2. **Policy Engine**: Enforces rules and constraints
+1. **Agent Kernel**: Central coordinator that mediates all agent actions with OS-like rigor
+2. **Policy Engine**: Enforces rules and constraints deterministically
 3. **Execution Engine**: Safely executes actions in sandboxed environments
-4. **Audit System**: Tracks all activities for compliance and debugging
+4. **Constraint Graphs**: Multi-dimensional context defining what's possible
+5. **Shadow Mode**: Test and validate agent behavior without side effects
+6. **Supervisor Network**: Agents watching agents for anomalies and violations
 
 ## Quick Start
 
@@ -114,6 +131,129 @@ rule = PolicyRule(
 control_plane.add_policy_rule(rule)
 ```
 
+### Advanced Features
+
+#### The Mute Agent - Scale by Subtraction
+
+Create agents that know when to shut up and return NULL instead of hallucinating:
+
+```python
+from mute_agent import create_mute_sql_agent
+from agent_kernel import ActionType, PermissionLevel
+
+# Create a SQL agent that ONLY executes SELECT queries
+sql_config = create_mute_sql_agent("sql-bot")
+permissions = {ActionType.DATABASE_QUERY: PermissionLevel.READ_ONLY}
+agent = control_plane.create_agent("sql-bot", permissions)
+control_plane.enable_mute_agent("sql-bot", sql_config)
+
+# Valid: SELECT query
+result = control_plane.execute_action(
+    agent,
+    ActionType.DATABASE_QUERY,
+    {"query": "SELECT * FROM users"}
+)
+# ✓ Success: True
+
+# Invalid: Destructive operation
+result = control_plane.execute_action(
+    agent,
+    ActionType.DATABASE_QUERY,
+    {"query": "DROP TABLE users"}
+)
+# ✗ Success: False, Error: "NULL"
+# Agent returns NULL instead of trying to be "helpful"!
+```
+
+#### Shadow Mode - The Matrix for Agents
+
+Test agent behavior without actual execution:
+
+```python
+# Enable shadow mode
+control_plane = AgentControlPlane(enable_shadow_mode=True)
+agent = create_standard_agent(control_plane, "test-agent")
+
+# This looks like normal execution...
+result = control_plane.execute_action(
+    agent,
+    ActionType.FILE_WRITE,
+    {"path": "/data/important.txt", "content": "test"}
+)
+
+# But it was SIMULATED! No actual file was written.
+print(result["status"])  # "simulated"
+print(result["note"])    # "This was executed in SHADOW MODE..."
+
+# Get statistics
+stats = control_plane.get_shadow_statistics()
+print(f"Success rate: {stats['success_rate']:.1%}")
+```
+
+#### Constraint Graphs - Multi-Dimensional Context
+
+Define what's possible using Data, Policy, and Temporal graphs:
+
+```python
+from datetime import time
+
+# Create control plane with constraint graphs
+control_plane = AgentControlPlane(enable_constraint_graphs=True)
+
+# Data Graph: What data exists
+control_plane.add_data_table("users", {"id": "int", "name": "string"})
+control_plane.add_data_path("/data/")
+
+# Policy Graph: What rules apply
+control_plane.add_policy_constraint(
+    "pii_protection",
+    "No PII in output",
+    applies_to=["table:users"],
+    rule_type="deny"
+)
+
+# Temporal Graph: What's true RIGHT NOW
+control_plane.add_maintenance_window(
+    "nightly_maintenance",
+    start_time=time(2, 0),  # 2 AM
+    end_time=time(4, 0),    # 4 AM
+    blocked_actions=[ActionType.DATABASE_WRITE]
+)
+
+# The graphs enforce deterministically
+# If a table isn't in the Data Graph, access is blocked
+# If during maintenance window, writes are blocked
+# This is ENFORCEMENT, not advisory
+```
+
+#### Supervisor Agents - Recursive Governance
+
+Agents watching agents:
+
+```python
+from supervisor_agents import create_default_supervisor
+
+# Create worker agents
+agent1 = create_standard_agent(control_plane, "worker-1")
+agent2 = create_standard_agent(control_plane, "worker-2")
+
+# Create supervisor to watch them
+supervisor = create_default_supervisor(["worker-1", "worker-2"])
+control_plane.add_supervisor(supervisor)
+
+# Agents do their work...
+# (execute various actions)
+
+# Run supervision cycle
+violations = control_plane.run_supervision()
+
+# Supervisor detects: repeated failures, excessive risk, 
+# rate limit approaching, suspicious patterns, etc.
+for supervisor_id, viols in violations.items():
+    for v in viols:
+        print(f"[{v.severity}] {v.description}")
+```
+
 ## Architecture
 
 ```
@@ -148,30 +288,69 @@ control_plane.add_policy_rule(rule)
 
 ## Components
 
-### Agent Kernel
+### Core Components
+
+#### Agent Kernel
 The kernel mediates all interactions between the LLM and execution environment:
-- Permission checking
+- Permission checking with OS-like rigor
 - Request validation
 - Risk assessment
 - Audit logging
+- Session management
 
-### Policy Engine
-Enforces governance rules:
+#### Policy Engine
+Enforces governance rules deterministically:
 - Rate limiting and quotas
 - Custom policy rules
 - Risk management
 - Access control
+- Compliance enforcement
 
-### Execution Engine
+#### Execution Engine
 Safely executes agent actions:
-- Sandboxed environments
+- Sandboxed environments (4 levels: NONE, BASIC, STRICT, ISOLATED)
 - Timeout enforcement
 - Resource monitoring
 - Error handling
+- Transaction support
+
+### Advanced Components
+
+#### The Mute Agent
+Implements "Scale by Subtraction" philosophy:
+- Capability-based execution
+- Returns NULL for out-of-scope requests instead of hallucinating
+- No creativity, only precision
+- Example: SQL agent that only executes SELECT queries
+
+#### Shadow Mode
+The "Matrix" for agents - simulation without execution:
+- Intercepts all actions before execution
+- Validates against policies without side effects
+- Logs reasoning chains
+- Analyzes potential impact
+- Perfect for testing before production
+
+#### Constraint Graphs
+Multi-dimensional context defining the "physics" of the agent's world:
+- **Data Graph**: What data resources exist and are accessible
+- **Policy Graph**: What corporate rules and compliance constraints apply
+- **Temporal Graph**: What is true RIGHT NOW (maintenance windows, business hours, freeze periods)
+- Deterministic enforcement: LLM can think anything, but can only ACT on what graphs permit
+
+#### Supervisor Agents
+Recursive governance - agents watching agents:
+- Specialized, highly constrained monitoring agents
+- Detect violations, anomalies, and suspicious patterns
+- Flag issues to humans
+- Optional auto-remediation
+- Hierarchical supervision (supervisors watching supervisors)
 
 ## Examples
 
-Run the examples to see the control plane in action:
+### Basic Examples
+
+Run the basic examples:
 
 ```bash
 python3 examples.py
@@ -185,32 +364,66 @@ This demonstrates:
 - Audit logging
 - Risk management
 
-## Testing
+### Advanced Examples
 
-Run the test suite:
+Run the advanced feature examples:
 
 ```bash
-python3 test_control_plane.py
+python3 advanced_examples.py
 ```
+
+This demonstrates:
+- The Mute Agent (capability-based execution)
+- Shadow Mode (simulation)
+- Constraint Graphs (multi-dimensional context)
+- Supervisor Agents (recursive governance)
+- Integrated workflows
+
+## Testing
+
+Run the complete test suite:
+
+```bash
+# Basic features
+python3 test_control_plane.py
+
+# Advanced features
+python3 test_advanced_features.py
+
+# Or run all tests
+python3 test_control_plane.py && python3 test_advanced_features.py
+```
+
+Total: 31 tests covering all features.
 
 ## Use Cases
 
 ### Enterprise AI Agents
 Deploy agents with strict governance for enterprise environments:
-- Compliance with security policies
-- Audit trails for regulatory requirements
+- Compliance with security policies through Constraint Graphs
+- Complete audit trails for regulatory requirements
 - Resource quotas to control costs
+- Shadow Mode testing before production deployment
+
+### SQL-Generating Agents
+Build precise, non-creative agents:
+- Mute Agent configuration for SQL-only operations
+- Returns NULL for out-of-scope requests
+- No hallucination or conversational pivots
+- Example: Finance team data access agent
 
 ### Multi-tenant AI Platforms
 Safely run multiple agents with isolation:
 - Per-tenant quotas and policies
 - Isolated execution environments
 - Fair resource allocation
+- Supervisor Agents monitoring all tenants
 
 ### Development & Testing
 Experiment safely with agent capabilities:
+- Shadow Mode for risk-free testing
 - Sandboxed execution
-- Easy rollback of changes
+- Complete reasoning telemetry
 - Comprehensive logging
 
 ### Production Workflows
@@ -277,6 +490,50 @@ See [architecture.md](architecture.md) for detailed architecture documentation.
 - [ ] Integration with secrets management systems
 - [ ] Container-based sandboxing
 - [ ] Transaction rollback for database operations
+
+## How This Differs from Other Approaches
+
+### vs. "Manager" Models (e.g., Gas Town)
+
+Projects like Steve Yegge's Gas Town use a "City" metaphor where a "Mayor" agent orchestrates "Worker" agents to maximize coding throughput. This is brilliant for velocity.
+
+**The Difference:**
+- **Gas Town solves for COORDINATION** (getting things done fast)
+- **Agent Control Plane solves for CONTAINMENT** (ensuring things are safe)
+- In an enterprise, you don't just need a Manager; you need a Compliance Officer who can pull the plug
+
+The Agent Control Plane complements coordination systems by providing the safety layer.
+
+### vs. "Guardrails" Models (e.g., NeMo, LlamaGuard)
+
+Most current safety tools operate as "sidecars" that check input/output for toxicity, PII, or harmful content. They are largely text-based and probabilistic.
+
+**The Difference:**
+- **Guardrails are ADVISORY or REACTIVE** (sanitizing output after generation)
+- **Agent Control Plane is ARCHITECTURAL** (preventing action at the kernel level)
+- A guardrail scrubs a bad SQL query; a Control Plane ensures the agent never had the connection string to begin with
+- Guardrails work on content; Control Plane works on capabilities and execution
+
+### vs. "Tool Directory" Models
+
+Recent academic papers propose "Control Planes" that act as a phonebook, helping agents find the right tools.
+
+**The Difference:**
+- **Tool Directory is SERVICE DISCOVERY** (finding what's available)
+- **Agent Control Plane is a KERNEL** (strict enforcement of boundaries)
+- The Linux Kernel doesn't just "help" processes find memory; it strictly enforces that Process A cannot touch Process B's memory
+- We need that same hardness for Agents
+
+### The Agent Control Plane Approach
+
+**Deterministic Enforcement, Not Advisory Hints:**
+- LLM can "think" whatever it wants
+- But it can only ACT on what the Control Plane permits
+- Constraint Graphs define the "physics" of the agent's world
+- Shadow Mode lets you test everything before production
+- Supervisor Agents provide recursive oversight
+
+This is **systems engineering** for AI, not prompt engineering.
 
 ## Contributing
 
