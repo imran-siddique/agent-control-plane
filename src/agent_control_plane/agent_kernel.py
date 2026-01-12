@@ -6,13 +6,16 @@ between LLMs (raw compute) and the execution environment. It provides
 governance, safety, and observability for autonomous agents.
 """
 
-from typing import Any, Dict, List, Optional, Callable
+from typing import Any, Dict, List, Optional, Callable, TYPE_CHECKING
 from dataclasses import dataclass, field
 from enum import Enum
 from datetime import datetime
 import uuid
 import logging
 import asyncio
+
+if TYPE_CHECKING:
+    from .policy_engine import PolicyEngine
 
 
 class ActionType(Enum):

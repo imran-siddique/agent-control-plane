@@ -9,7 +9,7 @@ This module provides capabilities for agents to strictly operate within
 their defined constraints and return NULL/silence for out-of-scope requests.
 """
 
-from typing import Any, Dict, Optional, List, Callable
+from typing import Any, Dict, Optional, List, Callable, Tuple
 from dataclasses import dataclass, field
 from datetime import datetime
 from .agent_kernel import ActionType, ExecutionRequest
@@ -48,7 +48,7 @@ class MuteAgentValidator:
         self.config = config
         self.rejection_log: List[Dict[str, Any]] = []
     
-    def validate_request(self, request: ExecutionRequest) -> tuple[bool, Optional[str]]:
+    def validate_request(self, request: ExecutionRequest) -> Tuple[bool, Optional[str]]:
         """
         Validate if request maps to a defined capability.
         
@@ -86,7 +86,7 @@ class MuteAgentValidator:
         self, 
         action_type: ActionType, 
         parameters: Dict[str, Any]
-    ) -> tuple[bool, Optional[str]]:
+    ) -> Tuple[bool, Optional[str]]:
         """
         Lightweight validation without creating an ExecutionRequest.
         
