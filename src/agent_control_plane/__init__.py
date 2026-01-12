@@ -42,6 +42,12 @@ from .control_plane import (
     create_admin_agent,
 )
 
+from .adapter import (
+    ControlPlaneAdapter,
+    create_governed_client,
+    DEFAULT_TOOL_MAPPING,
+)
+
 __version__ = "0.1.0"
 __author__ = "Agent Control Plane Contributors"
 
@@ -51,6 +57,11 @@ __all__ = [
     "create_read_only_agent",
     "create_standard_agent",
     "create_admin_agent",
+    
+    # Adapter (Drop-in Middleware)
+    "ControlPlaneAdapter",
+    "create_governed_client",
+    "DEFAULT_TOOL_MAPPING",
     
     # Kernel
     "AgentKernel",
