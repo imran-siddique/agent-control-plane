@@ -11,6 +11,7 @@ from dataclasses import dataclass, field
 from enum import Enum
 from datetime import datetime
 import uuid
+import logging
 
 
 class ActionType(Enum):
@@ -89,19 +90,23 @@ class PolicyRule:
 
 class AgentKernel:
     """
-    The Agent Kernel - Core control plane component
+    The Agent Kernel - Core control plane component (The Hypervisor for AI Agents)
     
     Mediates between LLM output and actual execution, providing:
     - Permission checking
     - Policy enforcement
     - Resource management
     - Audit logging
+    - Tool interception at the API level
     """
     
-    def __init__(self):
+    def __init__(self, policy_engine: Optional['PolicyEngine'] = None, shadow_mode: bool = False):
         self.active_sessions: Dict[str, AgentContext] = {}
         self.policy_rules: List[PolicyRule] = []
         self.audit_log: List[Dict[str, Any]] = []
+        self.policy_engine = policy_engine
+        self.shadow_mode = shadow_mode
+        self.logger = logging.getLogger("AgentKernel")
         
     def create_agent_session(
         self,
@@ -119,6 +124,52 @@ class AgentKernel:
         self.active_sessions[session_id] = context
         self._audit("session_created", {"agent_id": agent_id, "session_id": session_id})
         return context
+    
+    def intercept_tool_execution(self, agent_id: str, tool_name: str, tool_args: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+        """
+        The critical choke point. No tool executes without passing this gate.
+        
+        This is the "Hypervisor" pattern - intercepts tool calls BEFORE they execute.
+        Returns None to allow execution, or a dict with blocking information.
+        
+        Args:
+            agent_id: The agent attempting the action
+            tool_name: The name of the tool being called
+            tool_args: Arguments passed to the tool
+            
+        Returns:
+            None if execution should proceed, or a dict with:
+                - status: "blocked" or "simulated"
+                - error: Error message (for blocked)
+                - mute: True (for blocked - indicates NULL response)
+                - result: Simulated result (for shadow mode)
+                - meta: Metadata about the action
+        """
+        # 1. Check Constraint Graph (Is this action valid in current state?)
+        if self.policy_engine:
+            violation = self.policy_engine.check_violation(agent_id, tool_name, tool_args)
+            
+            if violation:
+                self.logger.warning(f"BLOCKED: Agent {agent_id} tried {tool_name} but violated constraint: {violation}")
+                # THE MUTE PROTOCOL: Return a system error or NULL, not a polite refusal.
+                return {
+                    "status": "blocked",
+                    "error": "Access Denied: Action violates Runtime Policy.",
+                    "mute": True 
+                }
+
+        # 2. Shadow Mode Logic (The "Matrix")
+        if self.shadow_mode:
+            self.logger.info(f"SHADOW: Simulating {tool_name} for {agent_id}")
+            return {
+                "status": "simulated",
+                "result": f"Simulated success for {tool_name}",
+                "meta": {"shadow": True}
+            }
+
+        # 3. Allow Execution (Return None lets the actual tool run)
+        self.logger.info(f"ALLOWED: {tool_name} for {agent_id}")
+        return None
     
     def submit_request(
         self,

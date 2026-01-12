@@ -60,6 +60,11 @@ class PolicyEngine:
         self.custom_rules: List[PolicyRule] = []
         self.blocked_patterns: List[str] = []
         
+        # Graph-based allow-list approach (Scale by Subtraction)
+        # By default, EVERYTHING is blocked unless explicitly allowed
+        self.allowed_transitions: set = set()
+        self.state_permissions: Dict[str, set] = {}
+        
     def set_quota(self, agent_id: str, quota: ResourceQuota):
         """Set resource quota for an agent"""
         self.quotas[agent_id] = quota
@@ -72,6 +77,49 @@ class PolicyEngine:
         """Add a custom policy rule"""
         self.custom_rules.append(rule)
         self.custom_rules.sort(key=lambda r: r.priority, reverse=True)
+    
+    def add_constraint(self, role: str, allowed_tools: List[str]):
+        """
+        Define the 'Physics' of the agent using allow-list approach.
+        
+        This implements "Scale by Subtraction" - by defining what IS allowed,
+        everything else is implicitly blocked.
+        
+        Args:
+            role: The agent role/ID
+            allowed_tools: List of tool names this role can use
+        """
+        self.state_permissions[role] = set(allowed_tools)
+    
+    def check_violation(self, agent_role: str, tool_name: str, args: Dict[str, Any]) -> Optional[str]:
+        """
+        Check if an action violates the constraint graph.
+        
+        Uses a two-level check:
+        1. Role-Based Check: Is this tool allowed for this role?
+        2. Argument-Based Check: Are the arguments safe?
+        
+        Returns:
+            None if no violation, or a string describing the violation
+        """
+        # 1. Role-Based Check (Allow-list approach)
+        allowed = self.state_permissions.get(agent_role, set())
+        if tool_name not in allowed:
+            return f"Role {agent_role} cannot use tool {tool_name}"
+
+        # 2. Argument-Based Check (e.g., "Write" is allowed, but not to "/etc/")
+        if tool_name == "write_file" and args.get("path", "").startswith("/etc"):
+            return "Path Violation: Cannot write to system directories."
+        
+        # Additional argument checks for common dangerous patterns
+        if tool_name in ["execute_code", "run_command"]:
+            code_or_cmd = args.get("code", args.get("command", "")).lower()
+            dangerous_patterns = ["rm -rf", "del /f", "format ", "drop table", "drop database"]
+            for pattern in dangerous_patterns:
+                if pattern in code_or_cmd:
+                    return f"Dangerous pattern detected: {pattern}"
+            
+        return None
     
     def check_rate_limit(self, request: ExecutionRequest) -> bool:
         """Check if request is within rate limits"""
