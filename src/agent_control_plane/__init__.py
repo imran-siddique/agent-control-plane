@@ -19,7 +19,13 @@ from .policy_engine import (
     PolicyEngine,
     ResourceQuota,
     RiskPolicy,
+    Condition,
+    ConditionalPermission,
     create_default_policies,
+)
+
+from .flight_recorder import (
+    FlightRecorder,
 )
 
 from .execution_engine import (
@@ -63,7 +69,12 @@ __all__ = [
     "PolicyEngine",
     "ResourceQuota",
     "RiskPolicy",
+    "Condition",
+    "ConditionalPermission",
     "create_default_policies",
+    
+    # Audit
+    "FlightRecorder",
     
     # Execution
     "ExecutionEngine",
