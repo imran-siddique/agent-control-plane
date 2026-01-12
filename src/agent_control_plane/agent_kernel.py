@@ -12,6 +12,7 @@ from enum import Enum
 from datetime import datetime
 import uuid
 import logging
+import asyncio
 
 
 class ActionType(Enum):
@@ -100,13 +101,14 @@ class AgentKernel:
     - Tool interception at the API level
     """
     
-    def __init__(self, policy_engine: Optional['PolicyEngine'] = None, shadow_mode: bool = False):
+    def __init__(self, policy_engine: Optional['PolicyEngine'] = None, shadow_mode: bool = False, audit_logger: Optional[Any] = None):
         self.active_sessions: Dict[str, AgentContext] = {}
         self.policy_rules: List[PolicyRule] = []
         self.audit_log: List[Dict[str, Any]] = []
         self.policy_engine = policy_engine
         self.shadow_mode = shadow_mode
         self.logger = logging.getLogger("AgentKernel")
+        self.audit_logger = audit_logger  # FlightRecorder instance
         
     def create_agent_session(
         self,
@@ -125,51 +127,129 @@ class AgentKernel:
         self._audit("session_created", {"agent_id": agent_id, "session_id": session_id})
         return context
     
-    def intercept_tool_execution(self, agent_id: str, tool_name: str, tool_args: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+    def intercept_tool_execution(self, agent_id: str, tool_name: str, tool_args: Dict[str, Any], 
+                                  input_prompt: Optional[str] = None) -> Optional[Dict[str, Any]]:
         """
         The critical choke point. No tool executes without passing this gate.
         
         This is the "Hypervisor" pattern - intercepts tool calls BEFORE they execute.
-        Returns None to allow execution, or a dict with blocking information.
+        Synchronous version for backward compatibility. For async support, use intercept_tool_execution_async.
         
         Args:
             agent_id: The agent attempting the action
             tool_name: The name of the tool being called
             tool_args: Arguments passed to the tool
+            input_prompt: The original prompt/intent (optional, for audit trail)
             
         Returns:
-            None if execution should proceed, or a dict with:
-                - status: "blocked" or "simulated"
-                - error: Error message (for blocked)
-                - mute: True (for blocked - indicates NULL response)
-                - result: Simulated result (for shadow mode)
-                - meta: Metadata about the action
+            None if execution should proceed, or a dict with blocking/shadow information
         """
-        # 1. Check Constraint Graph (Is this action valid in current state?)
+        # 1. TELEMETRY: Start the trace
+        request_id = None
+        if self.audit_logger:
+            request_id = self.audit_logger.start_trace(agent_id, tool_name, tool_args, input_prompt)
+        
+        # 2. POLICY CHECK: The "Mute" Protocol
+        # We don't just check the tool name; we check the ARGS.
+        # e.g., allow "read_file" but block path="/etc/passwd"
         if self.policy_engine:
             violation = self.policy_engine.check_violation(agent_id, tool_name, tool_args)
             
             if violation:
+                if self.audit_logger and request_id:
+                    self.audit_logger.log_violation(request_id, violation)
+                
                 self.logger.warning(f"BLOCKED: Agent {agent_id} tried {tool_name} but violated constraint: {violation}")
-                # THE MUTE PROTOCOL: Return a system error or NULL, not a polite refusal.
+                
+                # THE MUTE AGENT:
+                # We return a system error, NOT a polite chat response.
                 return {
                     "status": "blocked",
-                    "error": "Access Denied: Action violates Runtime Policy.",
-                    "mute": True 
+                    "error": "RuntimeError: PolicyViolation - Action Blocked by Kernel.",
+                    "mute": True
                 }
 
-        # 2. Shadow Mode Logic (The "Matrix")
+        # 3. SHADOW MODE: The Matrix
+        # If the agent is in shadow mode, we return a "Simulated Success"
         if self.shadow_mode:
+            if self.audit_logger and request_id:
+                self.audit_logger.log_shadow_exec(request_id, f"Simulated success for {tool_name}")
+            
             self.logger.info(f"SHADOW: Simulating {tool_name} for {agent_id}")
             return {
                 "status": "simulated",
-                "result": f"Simulated success for {tool_name}",
+                "result": "Success (Simulated)",
                 "meta": {"shadow": True}
             }
 
-        # 3. Allow Execution (Return None lets the actual tool run)
+        # 4. EXECUTE (Allow)
+        if self.audit_logger and request_id:
+            self.audit_logger.log_success(request_id)
+        
         self.logger.info(f"ALLOWED: {tool_name} for {agent_id}")
-        return None
+        return None  # None means allowed (for backward compatibility)
+    
+    async def intercept_tool_execution_async(self, agent_id: str, tool_name: str, tool_args: Dict[str, Any], 
+                                             input_prompt: Optional[str] = None) -> Dict[str, Any]:
+        """
+        Async version of intercept_tool_execution for non-blocking operation.
+        
+        This is the production-ready async implementation that supports
+        concurrent agent operations.
+        
+        Args:
+            agent_id: The agent attempting the action
+            tool_name: The name of the tool being called
+            tool_args: Arguments passed to the tool
+            input_prompt: The original prompt/intent (optional, for audit trail)
+            
+        Returns:
+            Dict with:
+                - allowed: bool - Whether execution is allowed
+                - error: str - Error message (if blocked)
+                - mute: bool - True for blocked actions (NULL response)
+                - result: Any - Simulated result (for shadow mode)
+                - shadow: bool - True if shadow mode
+        """
+        # 1. TELEMETRY: Start the trace
+        request_id = None
+        if self.audit_logger:
+            request_id = self.audit_logger.start_trace(agent_id, tool_name, tool_args, input_prompt)
+        
+        # 2. POLICY CHECK: The "Mute" Protocol
+        if self.policy_engine:
+            violation = self.policy_engine.check_violation(agent_id, tool_name, tool_args)
+            
+            if violation:
+                if self.audit_logger and request_id:
+                    self.audit_logger.log_violation(request_id, violation)
+                
+                self.logger.warning(f"BLOCKED: Agent {agent_id} tried {tool_name} but violated constraint: {violation}")
+                
+                return {
+                    "allowed": False,
+                    "error": "RuntimeError: PolicyViolation - Action Blocked by Kernel.",
+                    "mute": True
+                }
+
+        # 3. SHADOW MODE: The Matrix
+        if self.shadow_mode:
+            if self.audit_logger and request_id:
+                self.audit_logger.log_shadow_exec(request_id, f"Simulated success for {tool_name}")
+            
+            self.logger.info(f"SHADOW: Simulating {tool_name} for {agent_id}")
+            return {
+                "allowed": False,  # Technically false because we didn't run it
+                "result": "Success (Simulated)",
+                "shadow": True
+            }
+
+        # 4. EXECUTE
+        if self.audit_logger and request_id:
+            self.audit_logger.log_success(request_id)
+        
+        self.logger.info(f"ALLOWED: {tool_name} for {agent_id}")
+        return {"allowed": True}
     
     def submit_request(
         self,

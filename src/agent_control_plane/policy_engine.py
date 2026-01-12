@@ -15,6 +15,109 @@ import re
 
 
 @dataclass
+class Condition:
+    """
+    A condition for ABAC (Attribute-Based Access Control).
+    
+    Allows policies like: "Agent can call tool X IF condition Y is true"
+    Example: "refund_user" allowed IF user_status == "verified"
+    """
+    attribute_path: str  # e.g., "user_status", "args.amount", "context.time_of_day"
+    operator: str  # eq, ne, gt, lt, gte, lte, in, not_in, contains
+    value: Any  # The value to compare against
+    
+    def evaluate(self, context: Dict[str, Any]) -> bool:
+        """
+        Evaluate the condition against a context.
+        
+        Args:
+            context: Dictionary containing the evaluation context
+                    (e.g., {"user_status": "verified", "args": {...}, "context": {...}})
+        
+        Returns:
+            True if condition is met, False otherwise
+        """
+        # Extract the value from the context using the attribute path
+        actual_value = self._get_nested_value(context, self.attribute_path)
+        
+        if actual_value is None:
+            return False
+        
+        # Evaluate based on operator
+        if self.operator == "eq":
+            return actual_value == self.value
+        elif self.operator == "ne":
+            return actual_value != self.value
+        elif self.operator == "gt":
+            return actual_value > self.value
+        elif self.operator == "lt":
+            return actual_value < self.value
+        elif self.operator == "gte":
+            return actual_value >= self.value
+        elif self.operator == "lte":
+            return actual_value <= self.value
+        elif self.operator == "in":
+            return actual_value in self.value
+        elif self.operator == "not_in":
+            return actual_value not in self.value
+        elif self.operator == "contains":
+            return self.value in actual_value
+        else:
+            return False
+    
+    def _get_nested_value(self, data: Dict[str, Any], path: str) -> Any:
+        """
+        Get a nested value from a dictionary using dot notation.
+        
+        Args:
+            data: The dictionary to search
+            path: Dot-separated path (e.g., "args.amount")
+        
+        Returns:
+            The value at the path, or None if not found
+        """
+        keys = path.split(".")
+        value = data
+        
+        for key in keys:
+            if isinstance(value, dict) and key in value:
+                value = value[key]
+            else:
+                return None
+        
+        return value
+
+
+@dataclass
+class ConditionalPermission:
+    """
+    A permission that requires conditions to be met.
+    
+    Example: "refund_user" allowed IF user_status == "verified" AND amount < 1000
+    """
+    tool_name: str
+    conditions: List[Condition]
+    require_all: bool = True  # If True, all conditions must be met (AND). If False, any condition (OR).
+    
+    def is_allowed(self, context: Dict[str, Any]) -> bool:
+        """
+        Check if the permission is allowed given the context.
+        
+        Args:
+            context: The evaluation context
+        
+        Returns:
+            True if allowed, False otherwise
+        """
+        if self.require_all:
+            # All conditions must be true (AND)
+            return all(cond.evaluate(context) for cond in self.conditions)
+        else:
+            # Any condition must be true (OR)
+            return any(cond.evaluate(context) for cond in self.conditions)
+
+
+@dataclass
 class ResourceQuota:
     """Resource quota for an agent or tenant"""
     agent_id: str
@@ -67,6 +170,12 @@ class PolicyEngine:
         self.allowed_transitions: set = set()
         self.state_permissions: Dict[str, set] = {}
         
+        # ABAC: Conditional permissions (Context-Aware Graph)
+        # Maps agent_role -> list of conditional permissions
+        self.conditional_permissions: Dict[str, List[ConditionalPermission]] = {}
+        # Context data for ABAC evaluation (e.g., user_status, time_of_day, etc.)
+        self.agent_contexts: Dict[str, Dict[str, Any]] = {}
+        
         # Configurable dangerous patterns for code/command execution
         # Uses regex patterns for better detection
         self.dangerous_code_patterns: List[re.Pattern] = [
@@ -108,13 +217,72 @@ class PolicyEngine:
         """
         self.state_permissions[role] = set(allowed_tools)
     
+    def add_conditional_permission(self, agent_role: str, permission: ConditionalPermission):
+        """
+        Add a conditional permission for ABAC (Attribute-Based Access Control).
+        
+        This moves from RBAC to ABAC, allowing context-aware policies like:
+        "Agent can call refund_user IF AND ONLY IF user_status == 'verified'"
+        
+        Args:
+            agent_role: The agent role/ID
+            permission: The conditional permission to add
+        """
+        if agent_role not in self.conditional_permissions:
+            self.conditional_permissions[agent_role] = []
+        
+        self.conditional_permissions[agent_role].append(permission)
+        
+        # Also add the tool to the basic allow-list so it passes the first check
+        # The conditional check will happen later
+        if agent_role not in self.state_permissions:
+            self.state_permissions[agent_role] = set()
+        self.state_permissions[agent_role].add(permission.tool_name)
+    
+    def set_agent_context(self, agent_role: str, context: Dict[str, Any]):
+        """
+        Set the context data for an agent for ABAC evaluation.
+        
+        Args:
+            agent_role: The agent role/ID
+            context: Dictionary of context attributes (e.g., {"user_status": "verified", "time_of_day": "business_hours"})
+        """
+        self.agent_contexts[agent_role] = context
+    
+    def update_agent_context(self, agent_role: str, updates: Dict[str, Any]):
+        """
+        Update specific context attributes for an agent.
+        
+        Args:
+            agent_role: The agent role/ID
+            updates: Dictionary of attributes to update
+        """
+        if agent_role not in self.agent_contexts:
+            self.agent_contexts[agent_role] = {}
+        
+        self.agent_contexts[agent_role].update(updates)
+    
+    def is_shadow_mode(self, agent_role: str) -> bool:
+        """
+        Check if an agent is in shadow mode.
+        
+        Args:
+            agent_role: The agent role/ID
+        
+        Returns:
+            True if agent is in shadow mode, False otherwise
+        """
+        context = self.agent_contexts.get(agent_role, {})
+        return context.get("shadow_mode", False)
+    
     def check_violation(self, agent_role: str, tool_name: str, args: Dict[str, Any]) -> Optional[str]:
         """
         Check if an action violates the constraint graph.
         
-        Uses a two-level check:
+        Uses a three-level check:
         1. Role-Based Check: Is this tool allowed for this role?
-        2. Argument-Based Check: Are the arguments safe?
+        2. Condition-Based Check (ABAC): Are the conditions met?
+        3. Argument-Based Check: Are the arguments safe?
         
         Returns:
             None if no violation, or a string describing the violation
@@ -123,10 +291,27 @@ class PolicyEngine:
         allowed = self.state_permissions.get(agent_role, set())
         if tool_name not in allowed:
             return f"Role {agent_role} cannot use tool {tool_name}"
-
-        # 2. Argument-Based Check
         
-        # 2a. Path validation with normalization to prevent traversal attacks
+        # 2. Condition-Based Check (ABAC)
+        # Check if there are conditional permissions for this agent/tool
+        if agent_role in self.conditional_permissions:
+            for cond_perm in self.conditional_permissions[agent_role]:
+                if cond_perm.tool_name == tool_name:
+                    # Build evaluation context
+                    eval_context = {
+                        "args": args,
+                        "context": self.agent_contexts.get(agent_role, {}),
+                    }
+                    # Merge top-level context attributes
+                    eval_context.update(self.agent_contexts.get(agent_role, {}))
+                    
+                    # Check if conditions are met
+                    if not cond_perm.is_allowed(eval_context):
+                        return f"Conditional permission denied for {tool_name}: Conditions not met"
+
+        # 3. Argument-Based Check
+        
+        # 3a. Path validation with normalization to prevent traversal attacks
         if tool_name in ["write_file", "read_file", "delete_file"] and "path" in args:
             path = args.get("path", "")
             
@@ -141,7 +326,7 @@ class PolicyEngine:
                 if normalized_path.startswith(os.path.normpath(protected)):
                     return f"Path Violation: Cannot access protected directory {protected}"
         
-        # 2b. Code execution validation using regex patterns
+        # 3b. Code execution validation using regex patterns
         if tool_name in ["execute_code", "run_command"]:
             code_or_cmd = args.get("code", args.get("command", ""))
             
