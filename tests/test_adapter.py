@@ -14,32 +14,45 @@ from agent_control_plane import (
 
 
 class MockOpenAIClient:
-    """Mock OpenAI client for testing"""
+    """
+    Mock OpenAI client for testing the adapter.
+    
+    This class mimics the structure of the OpenAI SDK client,
+    providing the nested classes (MockFunction, MockToolCall, etc.)
+    that represent the OpenAI API response structure.
+    
+    It allows testing the adapter without making actual API calls.
+    """
     
     class MockFunction:
+        """Represents a function call in OpenAI's tool call structure"""
         def __init__(self, name, arguments):
             self.name = name
             self.arguments = arguments
     
     class MockToolCall:
+        """Represents a tool call in OpenAI's response"""
         def __init__(self, name, arguments):
             self.id = f"call_{name}"
             self.type = "function"
             self.function = MockOpenAIClient.MockFunction(name, arguments)
     
     class MockMessage:
+        """Represents the message object in OpenAI's response"""
         def __init__(self, tool_calls=None):
             self.role = "assistant"
             self.content = None
             self.tool_calls = tool_calls or []
     
     class MockChoice:
+        """Represents a choice in OpenAI's response"""
         def __init__(self, message):
             self.index = 0
             self.message = message
             self.finish_reason = "tool_calls"
     
     class MockResponse:
+        """Represents a complete OpenAI API response"""
         def __init__(self, choices):
             self.id = "chatcmpl-mock"
             self.object = "chat.completion"
@@ -47,15 +60,18 @@ class MockOpenAIClient:
             self.choices = choices
     
     class MockCompletions:
+        """Represents the chat.completions API endpoint"""
         def __init__(self, tool_calls):
             self.tool_calls_to_return = tool_calls
         
         def create(self, **kwargs):
+            """Mock the create() method that returns tool calls"""
             message = MockOpenAIClient.MockMessage(self.tool_calls_to_return)
             choice = MockOpenAIClient.MockChoice(message)
             return MockOpenAIClient.MockResponse([choice])
     
     class MockChat:
+        """Represents the chat API endpoint"""
         def __init__(self, tool_calls):
             self.completions = MockOpenAIClient.MockCompletions(tool_calls)
     

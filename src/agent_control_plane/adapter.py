@@ -145,8 +145,11 @@ class ChatCompletionsWrapper:
             # Parse arguments (they come as JSON string from OpenAI)
             try:
                 tool_args = json.loads(tool_call.function.arguments) if tool_call.function.arguments else {}
-            except json.JSONDecodeError:
-                self.logger.warning(f"Could not parse tool arguments: {tool_call.function.arguments}")
+            except json.JSONDecodeError as e:
+                self.logger.warning(
+                    f"Could not parse arguments for tool '{tool_name}': {tool_call.function.arguments}. "
+                    f"Error: {e}. Using empty dict."
+                )
                 tool_args = {}
             
             # Map tool name to ActionType
