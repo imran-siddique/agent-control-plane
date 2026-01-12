@@ -10,6 +10,8 @@ from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from .agent_kernel import ExecutionRequest, ActionType, PolicyRule
 import uuid
+import os
+import re
 
 
 @dataclass
@@ -60,6 +62,26 @@ class PolicyEngine:
         self.custom_rules: List[PolicyRule] = []
         self.blocked_patterns: List[str] = []
         
+        # Graph-based allow-list approach (Scale by Subtraction)
+        # By default, EVERYTHING is blocked unless explicitly allowed
+        self.allowed_transitions: set = set()
+        self.state_permissions: Dict[str, set] = {}
+        
+        # Configurable dangerous patterns for code/command execution
+        # Uses regex patterns for better detection
+        self.dangerous_code_patterns: List[re.Pattern] = [
+            re.compile(r'\brm\s+-rf\b', re.IGNORECASE),
+            re.compile(r'\bdel\s+/f\b', re.IGNORECASE),
+            re.compile(r'\bformat\s+', re.IGNORECASE),
+            re.compile(r'\bdrop\s+table\b', re.IGNORECASE),
+            re.compile(r'\bdrop\s+database\b', re.IGNORECASE),
+            re.compile(r'\btruncate\s+table\b', re.IGNORECASE),
+            re.compile(r'\bdelete\s+from\b', re.IGNORECASE),
+        ]
+        
+        # Configurable system paths to protect
+        self.protected_paths: List[str] = ['/etc/', '/sys/', '/proc/', '/dev/', 'C:\\Windows\\System32']
+        
     def set_quota(self, agent_id: str, quota: ResourceQuota):
         """Set resource quota for an agent"""
         self.quotas[agent_id] = quota
@@ -72,6 +94,63 @@ class PolicyEngine:
         """Add a custom policy rule"""
         self.custom_rules.append(rule)
         self.custom_rules.sort(key=lambda r: r.priority, reverse=True)
+    
+    def add_constraint(self, role: str, allowed_tools: List[str]):
+        """
+        Define the 'Physics' of the agent using allow-list approach.
+        
+        This implements "Scale by Subtraction" - by defining what IS allowed,
+        everything else is implicitly blocked.
+        
+        Args:
+            role: The agent role/ID
+            allowed_tools: List of tool names this role can use
+        """
+        self.state_permissions[role] = set(allowed_tools)
+    
+    def check_violation(self, agent_role: str, tool_name: str, args: Dict[str, Any]) -> Optional[str]:
+        """
+        Check if an action violates the constraint graph.
+        
+        Uses a two-level check:
+        1. Role-Based Check: Is this tool allowed for this role?
+        2. Argument-Based Check: Are the arguments safe?
+        
+        Returns:
+            None if no violation, or a string describing the violation
+        """
+        # 1. Role-Based Check (Allow-list approach)
+        allowed = self.state_permissions.get(agent_role, set())
+        if tool_name not in allowed:
+            return f"Role {agent_role} cannot use tool {tool_name}"
+
+        # 2. Argument-Based Check
+        
+        # 2a. Path validation with normalization to prevent traversal attacks
+        if tool_name in ["write_file", "read_file", "delete_file"] and "path" in args:
+            path = args.get("path", "")
+            
+            # Normalize path to resolve '..' and symbolic links
+            try:
+                normalized_path = os.path.normpath(os.path.abspath(path))
+            except (ValueError, OSError):
+                return "Path Validation Error: Invalid path format"
+            
+            # Check against protected paths
+            for protected in self.protected_paths:
+                if normalized_path.startswith(os.path.normpath(protected)):
+                    return f"Path Violation: Cannot access protected directory {protected}"
+        
+        # 2b. Code execution validation using regex patterns
+        if tool_name in ["execute_code", "run_command"]:
+            code_or_cmd = args.get("code", args.get("command", ""))
+            
+            # Check against dangerous patterns using regex
+            for pattern in self.dangerous_code_patterns:
+                if pattern.search(code_or_cmd):
+                    return f"Dangerous pattern detected: {pattern.pattern}"
+            
+        return None
     
     def check_rate_limit(self, request: ExecutionRequest) -> bool:
         """Check if request is within rate limits"""
