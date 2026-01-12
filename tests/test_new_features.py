@@ -25,8 +25,7 @@ class TestAsyncSupport(unittest.TestCase):
         kernel = AgentKernel(policy_engine=policy, shadow_mode=False)
 
         # Run async method
-        loop = asyncio.get_event_loop()
-        result = loop.run_until_complete(
+        result = asyncio.run(
             kernel.intercept_tool_execution_async(
                 agent_id="test-agent", tool_name="read", tool_args={}
             )
@@ -42,8 +41,7 @@ class TestAsyncSupport(unittest.TestCase):
         kernel = AgentKernel(policy_engine=policy, shadow_mode=False)
 
         # Run async method
-        loop = asyncio.get_event_loop()
-        result = loop.run_until_complete(
+        result = asyncio.run(
             kernel.intercept_tool_execution_async(
                 agent_id="test-agent", tool_name="write", tool_args={}
             )
@@ -57,8 +55,7 @@ class TestAsyncSupport(unittest.TestCase):
         """Test async shadow mode returns simulated results"""
         kernel = AgentKernel(shadow_mode=True)
 
-        loop = asyncio.get_event_loop()
-        result = loop.run_until_complete(
+        result = asyncio.run(
             kernel.intercept_tool_execution_async(
                 agent_id="test-agent", tool_name="dangerous_tool", tool_args={}
             )
