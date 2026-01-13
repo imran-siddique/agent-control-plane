@@ -255,8 +255,9 @@ class LangChainAdapter:
         action_type = self._map_tool_to_action(tool_name)
         
         if action_type is None:
-            self.logger.warning(f"Unknown tool '{tool_name}', allowing by default")
-            return
+            # Security: Unknown tools are denied by default
+            self.logger.warning(f"Unknown tool '{tool_name}', denying by default")
+            raise PermissionError(f"Unknown tool: {tool_name}. Tool must be mapped to an ActionType.")
         
         # THE KERNEL CHECK - This is where governance happens
         self.logger.debug(f"Checking permission for {tool_name} -> {action_type.value}")

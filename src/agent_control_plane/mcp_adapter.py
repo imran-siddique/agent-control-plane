@@ -206,8 +206,9 @@ class MCPAdapter:
         action_type = self._map_tool_to_action(tool_name)
         
         if action_type is None:
-            self.logger.warning(f"Unknown tool '{tool_name}'")
-            raise PermissionError(f"Unknown tool: {tool_name}")
+            # Security: Unknown tools are denied by default
+            self.logger.warning(f"Unknown tool '{tool_name}', denying by default")
+            raise PermissionError(f"Unknown tool: {tool_name}. Tool must be mapped to an ActionType.")
         
         # THE KERNEL CHECK - This is where governance happens
         check_result = self.control_plane.execute_action(
@@ -246,8 +247,11 @@ class MCPAdapter:
         allowed_resources = []
         
         for resource_uri, resource_info in self.registered_resources.items():
-            # Check read permission for resources
-            if self._check_permission(ActionType.FILE_READ, {}):
+            # Determine appropriate action type for this resource
+            action_type = self._map_resource_to_action(resource_uri)
+            
+            # Check permission for this resource
+            if self._check_permission(action_type, {}):
                 allowed_resources.append(resource_info)
         
         return {"resources": allowed_resources}
@@ -293,12 +297,20 @@ class MCPAdapter:
         }
     
     def _handle_prompts_list(self, params: Dict) -> Dict:
-        """Handle prompts/list - list available prompts."""
+        """
+        Handle prompts/list - list available prompts.
+        
+        TODO: Implement actual prompt management when needed.
+        """
         # Prompts are generally safe to list
         return {"prompts": []}
     
     def _handle_prompts_get(self, params: Dict) -> Dict:
-        """Handle prompts/get - get a specific prompt."""
+        """
+        Handle prompts/get - get a specific prompt.
+        
+        TODO: Implement actual prompt retrieval when needed.
+        """
         # Prompts are generally safe to retrieve
         prompt_name = params.get("name", "")
         return {
@@ -334,8 +346,8 @@ class MCPAdapter:
         if any(p in tool_name_lower for p in ['exec', 'run', 'execute', 'code', 'python', 'bash']):
             return ActionType.CODE_EXECUTION
         
-        # Default to CODE_EXECUTION for unknown tools
-        return ActionType.CODE_EXECUTION
+        # Security: Return None for unknown tools (deny by default)
+        return None
     
     def _map_resource_to_action(self, uri: str) -> ActionType:
         """Map a resource URI to an ActionType."""
@@ -462,7 +474,16 @@ class MCPServer:
         return self.adapter.handle_message(request)
     
     def start(self):
-        """Start the MCP server (placeholder for actual implementation)."""
+        """
+        Start the MCP server (placeholder for actual implementation).
+        
+        Note: This is a simplified server implementation. For production use,
+        you would need to implement:
+        - Actual transport handling (stdio, SSE, HTTP)
+        - Request/response queuing
+        - Connection management
+        - Error recovery
+        """
         self.logger.info(f"MCP server '{self.server_name}' started on {self.transport}")
 
 

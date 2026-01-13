@@ -333,7 +333,12 @@ class A2AAdapter:
         }
     
     def _handle_negotiate(self, payload: Dict, from_agent: str) -> Dict:
-        """Handle task parameter negotiation."""
+        """
+        Handle task parameter negotiation.
+        
+        TODO: Implement actual negotiation logic with validation and governance.
+        Currently accepts all parameters as a placeholder.
+        """
         self.logger.info(f"Negotiation from {from_agent}")
         
         # Negotiation typically involves discussing task parameters
