@@ -48,6 +48,24 @@ from .adapter import (
     DEFAULT_TOOL_MAPPING,
 )
 
+from .langchain_adapter import (
+    LangChainAdapter,
+    create_governed_langchain_client,
+    DEFAULT_LANGCHAIN_TOOL_MAPPING,
+)
+
+from .mcp_adapter import (
+    MCPAdapter,
+    MCPServer,
+    create_governed_mcp_server,
+)
+
+from .a2a_adapter import (
+    A2AAdapter,
+    A2AAgent,
+    create_governed_a2a_agent,
+)
+
 __version__ = "0.1.0"
 __author__ = "Agent Control Plane Contributors"
 
@@ -58,10 +76,25 @@ __all__ = [
     "create_standard_agent",
     "create_admin_agent",
     
-    # Adapter (Drop-in Middleware)
+    # OpenAI Adapter (Drop-in Middleware)
     "ControlPlaneAdapter",
     "create_governed_client",
     "DEFAULT_TOOL_MAPPING",
+    
+    # LangChain Adapter
+    "LangChainAdapter",
+    "create_governed_langchain_client",
+    "DEFAULT_LANGCHAIN_TOOL_MAPPING",
+    
+    # MCP (Model Context Protocol) Adapter
+    "MCPAdapter",
+    "MCPServer",
+    "create_governed_mcp_server",
+    
+    # A2A (Agent-to-Agent) Adapter
+    "A2AAdapter",
+    "A2AAgent",
+    "create_governed_a2a_agent",
     
     # Kernel
     "AgentKernel",
