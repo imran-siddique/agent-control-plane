@@ -761,6 +761,56 @@ Recent academic papers propose "Control Planes" that act as a phonebook, helping
 
 This is **systems engineering** for AI, not prompt engineering.
 
+## Research & Academic Grounding
+
+The Agent Control Plane is built on peer-reviewed research and industry best practices, not just intuition.
+
+### Key Research Foundations
+
+Our design is informed by academic research across multiple domains:
+
+1. **Agent Safety**: "A Safety Framework for Real-World Agentic Systems" (arXiv:2511.21990) - contextual risk management
+2. **Multi-Agent Systems**: "Multi-Agent Systems: A Survey" (arXiv:2308.05391) - hierarchical control, cascade failure prevention
+3. **Security**: "MAESTRO: A Threat Modeling Framework for Agentic AI" (CSA, 2025) - threat vectors and defenses
+4. **Governance**: "Practices for Governing Agentic AI Systems" (OpenAI, 2023) - pre/post-deployment practices
+5. **Privacy**: "Privacy in Agentic Systems" (arXiv:2409.1087) - differential privacy, secure computation
+6. **Evaluation**: "Evaluating Agentic AI" (WEF, 2025) - standardized metrics and benchmarks
+
+### Research-Backed Design Decisions
+
+- **Deterministic enforcement** over probabilistic filtering (OS security model)
+- **Layered defense** architecture (defense-in-depth from security research)
+- **Capability-based security** (principle of least privilege)
+- **Simulation before execution** (risk-free pre-deployment testing)
+- **Multi-dimensional context** (ABAC - NIST SP 800-162)
+
+### Benchmark Methodology
+
+Our comparative safety study follows research standards:
+- Dataset based on "Red-Teaming Agentic AI" taxonomy (60 prompts across 4 categories)
+- Metrics follow "Evaluating Agentic AI" frameworks (SVR, FPR, token efficiency)
+- Baseline comparison with industry-standard prompt-based safety
+
+### Academic Resources
+
+- **[Research Foundation](docs/RESEARCH_FOUNDATION.md)** - Detailed research citations and applications
+- **[Bibliography](docs/BIBLIOGRAPHY.md)** - Complete list of 26+ research papers and reports
+- **[Benchmark Methodology](benchmark/README.md)** - Research-backed evaluation approach
+
+### Citation
+
+If you use Agent Control Plane in research:
+
+```bibtex
+@software{agent_control_plane,
+  title = {Agent Control Plane: A Governance Layer for Autonomous AI Agents},
+  author = {Agent Control Plane Contributors},
+  year = {2025},
+  url = {https://github.com/imran-siddique/agent-control-plane},
+  note = {MIT License}
+}
+```
+
 ## Contributing
 
 We welcome contributions! The Agent Control Plane is designed to be production-ready and contributor-friendly.
@@ -831,6 +881,8 @@ Comprehensive documentation is available in the `docs/` directory:
 - **[Implementation Guide](docs/guides/IMPLEMENTATION.md)** - Detailed implementation details
 - **[Philosophy](docs/guides/PHILOSOPHY.md)** - Core principles and design philosophy
 - **[Architecture](docs/architecture/architecture.md)** - System architecture overview
+- **[Research Foundation](docs/RESEARCH_FOUNDATION.md)** - Academic grounding and citations
+- **[Bibliography](docs/BIBLIOGRAPHY.md)** - Complete list of research references
 
 ## License
 

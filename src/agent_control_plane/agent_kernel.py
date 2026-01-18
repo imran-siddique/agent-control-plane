@@ -4,6 +4,16 @@ Agent Control Plane - Core Kernel Module
 The Agent Kernel is the central component that mediates all interactions
 between LLMs (raw compute) and the execution environment. It provides
 governance, safety, and observability for autonomous agents.
+
+Research Foundations:
+    - Deterministic enforcement approach inspired by OS kernel security models
+    - Permission model based on capability-based security (principle of least privilege)
+    - Risk assessment informed by "A Safety Framework for Real-World Agentic Systems"
+      (arXiv:2511.21990, 2024)
+    - Multi-agent patterns from "Multi-Agent Systems: A Survey" (arXiv:2308.05391, 2023)
+    - Governance practices from "Practices for Governing Agentic AI Systems" (OpenAI, 2023)
+
+See docs/RESEARCH_FOUNDATION.md for complete references.
 """
 
 from typing import Any, Dict, List, Optional, Callable, TYPE_CHECKING

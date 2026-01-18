@@ -7,6 +7,16 @@ whose only job is to watch the logs of worker agents and flag violations to
 a human.
 
 Agents watching agents, bound by a constitution of code.
+
+Research Foundations:
+    - Hierarchical control patterns from "Multi-Agent Systems: A Survey" 
+      (arXiv:2308.05391, 2023) - supervision hierarchies, cascade failure prevention
+    - Anomaly detection patterns for monitoring agent behavior
+    - Recursive governance inspired by "MAESTRO: A Threat Modeling Framework" 
+      (CSA, 2025) - multi-agent security monitoring
+    - Human-in-the-loop patterns for escalation and intervention
+
+See docs/RESEARCH_FOUNDATION.md for complete references.
 """
 
 from typing import Any, Dict, List, Optional, Callable

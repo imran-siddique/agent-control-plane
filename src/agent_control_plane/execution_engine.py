@@ -3,6 +3,15 @@ Execution Engine - Safe execution of agent actions
 
 Provides sandboxed execution, resource monitoring, and error handling
 for agent actions.
+
+Research Foundations:
+    - Sandbox isolation levels informed by container security best practices
+    - Timeout and resource limits from "Fault-Tolerant Multi-Agent Systems" 
+      (IEEE Trans. SMC, 2024) - failure recovery patterns
+    - Transaction rollback patterns from distributed systems research
+    - Circuit breaker and retry policies for resilience
+
+See docs/RESEARCH_FOUNDATION.md for complete references.
 """
 
 from typing import Any, Dict, Optional, Callable, List

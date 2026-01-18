@@ -12,6 +12,15 @@ Three types of graphs:
 If an agent tries to access something that exists in the Data Graph but is
 blocked in the Policy Graph, the Control Plane intercepts it. The request
 never even reaches the database.
+
+Research Foundations:
+    - Context-aware access control from ABAC research (NIST SP 800-162)
+    - Multi-dimensional policy evaluation
+    - Graph-based constraint modeling for complex policy interactions
+    - Temporal logic for time-based constraints
+    - Privacy controls informed by "Privacy in Agentic Systems" (arXiv:2409.1087, 2024)
+
+See docs/RESEARCH_FOUNDATION.md for complete references.
 """
 
 from typing import Any, Dict, List, Optional, Set, Callable, Tuple

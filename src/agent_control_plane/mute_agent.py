@@ -7,6 +7,14 @@ are out of scope, rather than hallucinating or being conversational.
 
 This module provides capabilities for agents to strictly operate within
 their defined constraints and return NULL/silence for out-of-scope requests.
+
+Research Foundations:
+    - Capability-based security model (principle of least privilege)
+    - "If a system can't do something, it can't be tricked into doing it"
+    - Fail-safe defaults from secure system design
+    - Inspired by NULL semantics in type systems and databases
+
+See docs/RESEARCH_FOUNDATION.md for complete references.
 """
 
 from typing import Any, Dict, Optional, List, Callable, Tuple

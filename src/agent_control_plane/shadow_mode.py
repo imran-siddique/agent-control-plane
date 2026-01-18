@@ -10,6 +10,14 @@ This enables:
 - Validation of agent decisions against policies
 - Analysis of agent reasoning without side effects
 - Telemetry on reasoning chains
+
+Research Foundations:
+    - Pre-deployment testing approach from "Practices for Governing Agentic AI Systems"
+      (OpenAI, 2023) - simulation before production deployment
+    - Risk-free validation patterns for testing agent behavior
+    - Statistical analysis of agent patterns for anomaly detection
+
+See docs/RESEARCH_FOUNDATION.md for complete references.
 """
 
 from typing import Any, Dict, List, Optional, Tuple
