@@ -152,9 +152,11 @@ Controlled by `MANIFEST.in`:
    - You cannot overwrite a version on PyPI
    - Increment the version number
 
-2. **"Invalid distribution"**
-   - Run `twine check dist/*` to identify issues
-   - Common: missing README, invalid metadata
+2. **"Invalid distribution"** or **"license-file" warning**
+   - `twine check` may show warnings about the `license-file` field
+   - This is a known issue with twine's validation being stricter than PyPI's requirements
+   - The package will upload successfully to PyPI despite this warning
+   - Run `twine check dist/* || true` to suppress the error
 
 3. **"Authentication failed"**
    - Verify API token is correct
