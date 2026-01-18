@@ -143,7 +143,7 @@ from .observability import (
     create_observability_suite,
 )
 
-__version__ = "0.1.0"
+__version__ = "1.1.0"
 __author__ = "Agent Control Plane Contributors"
 
 __all__ = [

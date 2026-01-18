@@ -5,6 +5,95 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.0] - 2026-01-18
+
+### Added
+
+#### ML-Based Safety & Anomaly Detection
+- **JailbreakDetector**: Pattern-based and embedding-based jailbreak detection with 60+ attack vectors
+  - Supports ignore instructions, roleplay, system override, hypothetical scenarios, and encoding tricks
+  - Behavioral analysis with context-aware threat scoring
+  - Ensemble detection combining patterns, embeddings, and behavioral signals
+- **AnomalyDetector**: Behavioral anomaly detection for agent actions
+  - Baseline establishment through historical behavior
+  - Novel action type detection
+  - Statistical anomaly scoring
+
+#### Compliance & Regulatory Frameworks
+- **ComplianceEngine**: Multi-framework compliance checking
+  - EU AI Act support with risk category assessment (unacceptable, high-risk, limited-risk, minimal-risk)
+  - SOC 2 Trust Service Criteria validation
+  - GDPR, HIPAA, PCI-DSS, ISO 27001 framework templates
+  - Automated control validation and audit trail generation
+  - Compliance reporting and dashboard
+- **ConstitutionalAI**: Value alignment framework
+  - Inspired by Anthropic's Constitutional AI research
+  - Default principles: harmlessness, honesty, privacy, transparency, fairness
+  - Self-critique capability for pre-response validation
+  - Custom constitutional rule support
+  - Automatic compliance scoring and violation detection
+
+#### Multimodal Capabilities
+- **VisionCapability**: Image analysis with governance
+  - Support for JPEG, PNG, GIF, WebP formats
+  - Safety checking and content moderation hooks
+  - Integration-ready for GPT-4V, Claude Vision, etc.
+- **AudioCapability**: Audio processing
+  - Transcription support (MP3, WAV, OGG, FLAC)
+  - Safety checking for audio content
+  - Duration and file size limits
+- **VectorStoreIntegration**: RAG support with multiple backends
+  - In-memory, Pinecone, Weaviate, ChromaDB, Qdrant, Milvus support
+  - Document storage with embeddings
+  - Semantic search with metadata filtering
+  - Hybrid search capabilities
+- **RAGPipeline**: Complete Retrieval-Augmented Generation pipeline
+  - Document retrieval and context assembly
+  - Citation tracking
+  - RAG-optimized prompt engineering
+
+#### Production Observability
+- **PrometheusExporter**: Metrics export for Prometheus scraping
+  - Counter, gauge, histogram, and summary metrics
+  - Multi-dimensional labels
+  - Prometheus text format export
+- **AlertManager**: Rule-based alerting system
+  - Configurable alert rules with severity levels
+  - Alert aggregation and deduplication
+  - Alert history and resolution tracking
+- **TraceCollector**: Distributed tracing
+  - OpenTelemetry-compatible span collection
+  - Parent-child span relationships
+  - Trace visualization data generation
+  - Performance analysis capabilities
+- **ObservabilityDashboard**: Unified observability interface
+  - Real-time metrics aggregation
+  - Active alert monitoring
+  - Trace visualization
+  - System health status reporting
+
+### Enhanced
+- Extended `__init__.py` exports to include all new modules
+- Updated README with v1.1 feature highlights
+- Comprehensive test coverage: 196 tests (68 new tests added)
+
+### Documentation
+- New comprehensive guide: `docs/ADVANCED_FEATURES.md`
+- Example scripts for all new features:
+  - `examples/ml_safety_demo.py`: Jailbreak and anomaly detection examples
+  - `examples/compliance_demo.py`: Compliance and Constitutional AI examples
+  - `examples/multimodal_demo.py`: Vision, audio, and RAG examples
+  - `examples/observability_demo.py`: Metrics, alerting, and tracing examples
+
+### Research Foundations
+All new features are grounded in peer-reviewed research:
+- Universal and Transferable Adversarial Attacks (arXiv:2307.15043)
+- Red-Teaming Large Language Models (arXiv:2308.10263)
+- Multimodal Agents: A Survey (arXiv:2404.12390)
+- Constitutional AI from Anthropic research
+- EU AI Act (2024) regulatory framework
+- Prometheus and OpenTelemetry observability standards
+
 ## [0.1.0] - 2025-01-11
 
 ### Added
