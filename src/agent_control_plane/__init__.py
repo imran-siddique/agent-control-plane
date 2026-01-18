@@ -96,7 +96,54 @@ from .governance_layer import (
     create_default_governance,
 )
 
-__version__ = "0.1.0"
+from .ml_safety import (
+    JailbreakDetector,
+    AnomalyDetector,
+    ThreatLevel,
+    ThreatDetectionResult,
+    DetectionMethod,
+    create_ml_safety_suite,
+)
+
+from .compliance import (
+    ComplianceEngine,
+    ConstitutionalAI,
+    RegulatoryFramework,
+    RiskCategory,
+    ConstitutionalPrinciple,
+    ComplianceCheck,
+    create_compliance_suite,
+)
+
+from .multimodal import (
+    VisionCapability,
+    AudioCapability,
+    VectorStoreIntegration,
+    RAGPipeline,
+    ImageInput,
+    AudioInput,
+    MultimodalInput,
+    VectorDocument,
+    VectorStoreType,
+    ModalityType,
+    create_multimodal_suite,
+)
+
+from .observability import (
+    PrometheusExporter,
+    AlertManager,
+    TraceCollector,
+    ObservabilityDashboard,
+    Metric,
+    Alert,
+    Trace,
+    Span,
+    MetricType,
+    AlertSeverity,
+    create_observability_suite,
+)
+
+__version__ = "1.1.0"
 __author__ = "Agent Control Plane Contributors"
 
 __all__ = [
@@ -152,6 +199,49 @@ __all__ = [
     "PrivacyLevel",
     "PrivacyAnalysis",
     "create_default_governance",
+    
+    # ML-Based Safety & Anomaly Detection
+    "JailbreakDetector",
+    "AnomalyDetector",
+    "ThreatLevel",
+    "ThreatDetectionResult",
+    "DetectionMethod",
+    "create_ml_safety_suite",
+    
+    # Compliance & Constitutional AI
+    "ComplianceEngine",
+    "ConstitutionalAI",
+    "RegulatoryFramework",
+    "RiskCategory",
+    "ConstitutionalPrinciple",
+    "ComplianceCheck",
+    "create_compliance_suite",
+    
+    # Multimodal Capabilities (Vision, Audio, RAG)
+    "VisionCapability",
+    "AudioCapability",
+    "VectorStoreIntegration",
+    "RAGPipeline",
+    "ImageInput",
+    "AudioInput",
+    "MultimodalInput",
+    "VectorDocument",
+    "VectorStoreType",
+    "ModalityType",
+    "create_multimodal_suite",
+    
+    # Observability & Monitoring
+    "PrometheusExporter",
+    "AlertManager",
+    "TraceCollector",
+    "ObservabilityDashboard",
+    "Metric",
+    "Alert",
+    "Trace",
+    "Span",
+    "MetricType",
+    "AlertSeverity",
+    "create_observability_suite",
     
     # Kernel
     "AgentKernel",

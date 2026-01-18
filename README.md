@@ -44,6 +44,13 @@ As we move from chatbots to autonomous agents—systems that can execute code, m
 - **Docker Support**: Production-ready containerization with docker-compose
 - **Interactive Notebooks**: Jupyter notebook tutorials for hands-on learning
 
+### New: Advanced Safety & Compliance (v1.1)
+- **ML-Based Safety**: Jailbreak detection with 60+ attack patterns, anomaly detection, behavioral analysis
+- **Compliance Engine**: EU AI Act, SOC 2, GDPR, HIPAA support with automated checks
+- **Constitutional AI**: Value alignment framework inspired by Anthropic's research
+- **Multimodal Capabilities**: Vision (GPT-4o-style), audio processing, RAG with vector stores
+- **Production Observability**: Prometheus metrics, distributed tracing, real-time alerting
+
 ## Key Concepts
 
 ### The Problem
