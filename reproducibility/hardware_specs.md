@@ -87,6 +87,11 @@ torch==2.0.1+cu117 (GPU version, for ML safety)
 transformers==4.31.0 (for ML safety models)
 datasets==2.14.4 (for Hugging Face integration)
 huggingface-hub==0.16.4
+
+# Security-patched versions (vulnerabilities fixed)
+cryptography==42.0.4 (was 41.0.7, fixes CVE-2024-0727 and timing oracle)
+setuptools==78.1.1 (was 68.1.2, fixes path traversal and command injection)
+urllib3==2.6.3 (was 2.0.7, fixes decompression bomb vulnerabilities)
 ```
 
 **Note**: Core safety features (Policy Engine, Constraint Graphs, Mute Agent) have zero external dependencies. ML safety features (jailbreak detection) require torch and transformers.

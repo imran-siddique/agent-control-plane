@@ -108,6 +108,16 @@ See `hardware_specs.md` for detailed specifications. All experiments were run on
 | Multi-Agent RAG | ~5 minutes | ~100KB JSON |
 | Long-Horizon Purge | ~10 minutes | ~200KB JSON |
 
+## Security Note
+
+**Important**: The `requirements_frozen.txt` file uses patched versions of dependencies with known vulnerabilities:
+
+- **cryptography**: Updated to 42.0.4 (fixes NULL pointer dereference and Bleichenbacher timing oracle)
+- **setuptools**: Updated to 78.1.1 (fixes path traversal and command injection)
+- **urllib3**: Updated to 2.6.3 (fixes decompression bomb vulnerabilities)
+
+These versions are tested and confirmed to work with all experiments while addressing security concerns.
+
 ## Verification
 
 After running experiments, verify results match expected values:

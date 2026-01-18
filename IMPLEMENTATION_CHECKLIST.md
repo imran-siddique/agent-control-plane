@@ -154,16 +154,23 @@ Created `docs/community/ANNOUNCEMENT_TEMPLATES.md`:
 
 ## 📊 Metrics Summary
 
-**Files Created**: 13 new files
-**Files Modified**: 4 existing files
+**Files Created**: 14 new files (including SECURITY_UPDATES.md)
+**Files Modified**: 7 existing files
 **Total Code**: ~40KB new content
-**Documentation**: ~35KB new documentation
+**Documentation**: ~40KB new documentation
+
+**Security Updates**:
+- ✅ Fixed 7 vulnerabilities in 3 packages
+- ✅ cryptography 41.0.7 → 42.0.4 (2 CVEs fixed)
+- ✅ setuptools 68.1.2 → 78.1.1 (2 vulnerabilities fixed)
+- ✅ urllib3 2.0.7 → 2.6.3 (3 vulnerabilities fixed)
 
 **Testing Status**:
 - ✅ Dataset upload script (dry-run successful)
 - ✅ Multi-agent RAG experiment (5 queries)
 - ✅ Long-horizon purge experiment (100 steps)
 - ✅ All new files verified and working
+- ✅ Security patches tested - no regressions
 
 ## 🚀 Ready for Action
 
@@ -217,9 +224,11 @@ docker build -t acp-reproducibility:v1.1.0 .
 4. **Honest**: Limitations clearly documented with workarounds
 5. **Tested**: All new code tested and verified working
 6. **Professional**: Publication-ready templates and materials
+7. **Secure**: All known vulnerabilities patched (7 CVEs fixed)
 
 ---
 
 **Implementation Date**: January 18, 2026  
 **Version**: 1.1.0  
-**Status**: ✅ Complete - Ready for Publication
+**Status**: ✅ Complete - Ready for Publication  
+**Security**: ✅ All vulnerabilities patched
