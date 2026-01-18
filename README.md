@@ -36,6 +36,14 @@ As we move from chatbots to autonomous agents—systems that can execute code, m
 - **Reasoning Telemetry**: Complete trace of agent decision-making process
 - **Red Team Dataset**: Comprehensive adversarial prompt testing with 60+ attack vectors
 
+### New: Multi-Agent & Enterprise Features
+- **Agent Orchestrator**: Multi-agent coordination with sequential, parallel, and graph-based workflows (inspired by LangGraph)
+- **Tool Registry**: Dynamic tool registration and discovery for extensible agent capabilities
+- **Governance Layer**: Ethical alignment, bias detection, and privacy-preserving computation
+- **CLI Tool**: Command-line interface for agent management and operations
+- **Docker Support**: Production-ready containerization with docker-compose
+- **Interactive Notebooks**: Jupyter notebook tutorials for hands-on learning
+
 ## Key Concepts
 
 ### The Problem
@@ -446,6 +454,189 @@ for supervisor_id, viols in violations.items():
         print(f"[{v.severity}] {v.description}")
 ```
 
+#### Multi-Agent Orchestration - Coordinate Multiple Agents
+
+Create workflows with multiple specialized agents:
+
+```python
+from agent_control_plane import (
+    AgentOrchestrator,
+    AgentRole,
+    OrchestrationType,
+    create_rag_pipeline
+)
+
+# Create orchestrator
+orchestrator = AgentOrchestrator(control_plane)
+
+# Register specialized agents
+orchestrator.register_agent(
+    "retriever",
+    AgentRole.SPECIALIST,
+    capabilities=["document_search", "vector_search"]
+)
+
+orchestrator.register_agent(
+    "analyzer",
+    AgentRole.SPECIALIST,
+    capabilities=["data_analysis", "summarization"]
+)
+
+orchestrator.register_agent(
+    "supervisor",
+    AgentRole.SUPERVISOR,
+    capabilities=["quality_check", "safety_check"]
+)
+
+# Create a RAG pipeline workflow
+workflow = orchestrator.create_workflow("rag_pipeline", OrchestrationType.SEQUENTIAL)
+orchestrator.add_agent_to_workflow(workflow.workflow_id, "retriever")
+orchestrator.add_agent_to_workflow(
+    workflow.workflow_id,
+    "analyzer",
+    dependencies={"retriever"}  # Analyzer depends on retriever
+)
+
+# Add supervisor to watch all agents
+orchestrator.add_supervisor("supervisor", ["retriever", "analyzer"])
+
+# Execute workflow
+import asyncio
+result = asyncio.run(orchestrator.execute_workflow(
+    workflow.workflow_id,
+    {"query": "What are the key findings?"}
+))
+print(f"Workflow completed: {result['success']}")
+```
+
+#### Governance Layer - Ethical Alignment & Privacy
+
+Advanced safety beyond basic policies:
+
+```python
+from agent_control_plane import (
+    GovernanceLayer,
+    AlignmentPrinciple,
+    create_default_governance
+)
+
+# Create governance layer with ethical rules
+governance = create_default_governance()
+
+# Check alignment before execution
+context = {"content": "Analyze sales data"}
+alignment = governance.check_alignment(context)
+if not alignment["aligned"]:
+    print(f"Alignment violations: {alignment['violations']}")
+
+# Detect bias in content
+text = "All engineers should be..."
+bias_result = governance.detect_bias(text)
+if bias_result.has_bias:
+    print(f"Bias detected: {bias_result.bias_types}")
+    print(f"Recommendations: {bias_result.recommendations}")
+
+# Analyze privacy and PII
+data = {"email": "user@example.com", "phone": "555-1234"}
+privacy = governance.analyze_privacy(data)
+print(f"Privacy level: {privacy.privacy_level.value}")
+print(f"Contains PII: {privacy.contains_pii}")
+print(f"Risk score: {privacy.risk_score}")
+```
+
+#### Tool Registry - Dynamic Tool Management
+
+Extend agent capabilities with dynamic tool registration:
+
+```python
+from agent_control_plane import ToolRegistry, ToolType
+
+registry = ToolRegistry()
+
+# Register a custom tool
+def web_search(query: str) -> dict:
+    """Search the web for information"""
+    # Implementation here
+    return {"results": [...]}
+
+tool_id = registry.register_tool(
+    name="web_search",
+    description="Search the web",
+    tool_type=ToolType.SEARCH,
+    handler=web_search,
+    risk_level=0.3
+)
+
+# Execute the tool
+result = registry.execute_tool("web_search", {"query": "AI safety"})
+print(f"Search results: {result['result']}")
+
+# Discover tools by type
+search_tools = registry.get_tools_by_type(ToolType.SEARCH)
+print(f"Available search tools: {len(search_tools)}")
+```
+
+## Command Line Interface
+
+Agent Control Plane includes a CLI for common operations:
+
+```bash
+# Create an agent
+python acp-cli.py agent create my-agent --role worker
+
+# List all agents
+python acp-cli.py agent list
+
+# Inspect an agent
+python acp-cli.py agent inspect my-agent
+
+# View audit logs
+python acp-cli.py audit show --limit 10 --format json
+
+# Run safety benchmark
+python acp-cli.py benchmark run
+```
+
+## Docker Deployment
+
+Deploy Agent Control Plane in containers for production:
+
+```bash
+# Build and start services
+docker-compose up -d
+
+# View logs
+docker-compose logs -f
+
+# Development environment with Jupyter
+docker-compose --profile dev up -d acp-dev
+
+# Distributed setup with Redis
+docker-compose --profile distributed up -d
+```
+
+See [Docker Deployment Guide](docs/DOCKER_DEPLOYMENT.md) for complete instructions.
+
+## Interactive Tutorial
+
+Explore features hands-on with our Jupyter notebook:
+
+```bash
+# Install Jupyter
+pip install jupyter
+
+# Launch the tutorial
+jupyter notebook examples/interactive_tutorial.ipynb
+```
+
+The tutorial covers:
+- Agent creation and permissions
+- Shadow Mode testing
+- Multi-agent orchestration
+- Ethical alignment and bias detection
+- Privacy analysis
+- Tool registry usage
+
 ## Architecture
 
 ```
@@ -672,6 +863,14 @@ See [architecture.md](architecture.md) for detailed architecture documentation.
 - `ExecutionRequest`: Action request
 - `ExecutionResult`: Action result
 
+### New Multi-Agent & Governance Classes
+
+- `AgentOrchestrator`: Multi-agent coordination and workflows
+- `ToolRegistry`: Dynamic tool management and discovery
+- `GovernanceLayer`: Ethical alignment and advanced safety
+- `AgentNode`: Agent representation in orchestration graphs
+- `Tool`: Tool definition with schemas and handlers
+
 ### Action Types
 
 - `FILE_READ`: Read file operations
@@ -708,14 +907,26 @@ See [architecture.md](architecture.md) for detailed architecture documentation.
 
 ## Future Enhancements
 
-- [ ] Distributed execution across multiple nodes
-- [ ] Integration with external policy engines (OPA, etc.)
-- [ ] Real-time monitoring dashboard
-- [ ] Machine learning-based risk assessment
+Recent additions (2025):
+- [x] Multi-agent orchestration with workflows
+- [x] Dynamic tool registry with auto-discovery
+- [x] Governance layer with ethical alignment
+- [x] Bias detection and privacy analysis
+- [x] Docker deployment with docker-compose
+- [x] Command-line interface (CLI)
+- [x] Interactive Jupyter notebooks
+
+Planned enhancements:
+- [ ] Kubernetes deployment manifests and Helm charts
+- [ ] Integration with external policy engines (OPA, Cedar)
+- [ ] Real-time monitoring dashboard with metrics
+- [ ] Machine learning-based anomaly detection
 - [ ] Automatic policy generation from past behavior
-- [ ] Integration with secrets management systems
-- [ ] Container-based sandboxing
+- [ ] Integration with secrets management systems (Vault, AWS Secrets Manager)
+- [ ] Enhanced container-based sandboxing with gVisor
 - [ ] Transaction rollback for database operations
+- [ ] Federated learning support for privacy-preserving models
+- [ ] Integration with AdvBench and WildGuard datasets
 
 ## How This Differs from Other Approaches
 
@@ -760,6 +971,56 @@ Recent academic papers propose "Control Planes" that act as a phonebook, helping
 - Supervisor Agents provide recursive oversight
 
 This is **systems engineering** for AI, not prompt engineering.
+
+## Research & Academic Grounding
+
+The Agent Control Plane is built on peer-reviewed research and industry best practices, not just intuition.
+
+### Key Research Foundations
+
+Our design is informed by academic research across multiple domains:
+
+1. **Agent Safety**: "A Safety Framework for Real-World Agentic Systems" (arXiv:2511.21990) - contextual risk management
+2. **Multi-Agent Systems**: "Multi-Agent Systems: A Survey" (arXiv:2308.05391) - hierarchical control, cascade failure prevention
+3. **Security**: "MAESTRO: A Threat Modeling Framework for Agentic AI" (CSA, 2025) - threat vectors and defenses
+4. **Governance**: "Practices for Governing Agentic AI Systems" (OpenAI, 2023) - pre/post-deployment practices
+5. **Privacy**: "Privacy in Agentic Systems" (arXiv:2409.1087) - differential privacy, secure computation
+6. **Evaluation**: "Evaluating Agentic AI" (WEF, 2025) - standardized metrics and benchmarks
+
+### Research-Backed Design Decisions
+
+- **Deterministic enforcement** over probabilistic filtering (OS security model)
+- **Layered defense** architecture (defense-in-depth from security research)
+- **Capability-based security** (principle of least privilege)
+- **Simulation before execution** (risk-free pre-deployment testing)
+- **Multi-dimensional context** (ABAC - NIST SP 800-162)
+
+### Benchmark Methodology
+
+Our comparative safety study follows research standards:
+- Dataset based on "Red-Teaming Agentic AI" taxonomy (60 prompts across 4 categories)
+- Metrics follow "Evaluating Agentic AI" frameworks (SVR, FPR, token efficiency)
+- Baseline comparison with industry-standard prompt-based safety
+
+### Academic Resources
+
+- **[Research Foundation](docs/RESEARCH_FOUNDATION.md)** - Detailed research citations and applications
+- **[Bibliography](docs/BIBLIOGRAPHY.md)** - Complete list of 26+ research papers and reports
+- **[Benchmark Methodology](benchmark/README.md)** - Research-backed evaluation approach
+
+### Citation
+
+If you use Agent Control Plane in research:
+
+```bibtex
+@software{agent_control_plane,
+  title = {Agent Control Plane: A Governance Layer for Autonomous AI Agents},
+  author = {Agent Control Plane Contributors},
+  year = {2025},
+  url = {https://github.com/imran-siddique/agent-control-plane},
+  note = {MIT License}
+}
+```
 
 ## Contributing
 
@@ -831,6 +1092,8 @@ Comprehensive documentation is available in the `docs/` directory:
 - **[Implementation Guide](docs/guides/IMPLEMENTATION.md)** - Detailed implementation details
 - **[Philosophy](docs/guides/PHILOSOPHY.md)** - Core principles and design philosophy
 - **[Architecture](docs/architecture/architecture.md)** - System architecture overview
+- **[Research Foundation](docs/RESEARCH_FOUNDATION.md)** - Academic grounding and citations
+- **[Bibliography](docs/BIBLIOGRAPHY.md)** - Complete list of research references
 
 ## License
 

@@ -3,6 +3,17 @@ Policy Engine - Governance and compliance rules for agent execution
 
 The Policy Engine enforces rules and constraints on agent behavior,
 including resource quotas, access controls, and risk management.
+
+Research Foundations:
+    - ABAC model based on NIST SP 800-162 (Attribute-Based Access Control)
+    - Risk scoring informed by "A Safety Framework for Real-World Agentic Systems" 
+      (arXiv:2511.21990, 2024) - contextual risk management
+    - Governance patterns from "Practices for Governing Agentic AI Systems" 
+      (OpenAI, 2023) - pre/post-deployment checks
+    - Rate limiting patterns from "Fault-Tolerant Multi-Agent Systems" 
+      (IEEE Trans. SMC, 2024) - circuit breaker patterns
+
+See docs/RESEARCH_FOUNDATION.md for complete references.
 """
 
 from typing import Dict, List, Optional, Callable, Any, Tuple
