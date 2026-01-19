@@ -6,23 +6,30 @@ Welcome to the Agent Control Plane documentation! This comprehensive guide will 
 
 ### Getting Started
 - [Quick Start Guide](guides/QUICKSTART.md) - Get up and running in 5 minutes
-- [Installation](guides/INSTALLATION.md) - Detailed installation instructions
-
-### Guides
-- [Quick Start](guides/QUICKSTART.md) - Getting started with Agent Control Plane
 - [Implementation Guide](guides/IMPLEMENTATION.md) - Implementation details and best practices
 - [Philosophy](guides/PHILOSOPHY.md) - Core principles and design philosophy
 
-### Architecture
+### Architecture & API
 - [Architecture Overview](architecture/architecture.md) - System architecture and components
-- [Core Components](architecture/COMPONENTS.md) - Detailed component documentation
-- [Design Patterns](architecture/PATTERNS.md) - Common patterns and practices
-
-### API Reference
 - [Core API](api/CORE.md) - Main API reference
-- [Policy Engine](api/POLICY.md) - Policy engine API
-- [Execution Engine](api/EXECUTION.md) - Execution engine API
-- [Advanced Features](api/ADVANCED.md) - Advanced features API
+
+### Advanced Topics
+- [Adapter Guide](ADAPTER_GUIDE.md) - Framework integration (OpenAI, LangChain, MCP, A2A)
+- [Advanced Features](ADVANCED_FEATURES.md) - Shadow Mode, Mute Agent, Supervisors
+- [Docker Deployment](DOCKER_DEPLOYMENT.md) - Production containerization
+
+### Research & Reproducibility
+- [Research Foundation](RESEARCH_FOUNDATION.md) - Theoretical basis
+- [Related Work](RELATED_WORK.md) - Academic context
+- [Bibliography](BIBLIOGRAPHY.md) - References and citations
+- [Reproducibility](REPRODUCIBILITY.md) - How to reproduce results
+- [Ablation Studies](ABLATION_STUDIES.md) - Component analysis
+- [Limitations](LIMITATIONS.md) - Known limitations and future work
+- [Case Studies](CASE_STUDIES.md) - Real-world applications
+
+### Publishing
+- [PyPI Publishing](PYPI_PUBLISHING.md) - Package distribution guide
+- [Release Notes v1.1.0](RELEASE_v1.1.0.md) - Latest release details
 
 ### Examples
 See the [examples directory](../examples/) for working code examples:
@@ -37,41 +44,14 @@ See the [examples directory](../examples/) for working code examples:
 
 Agent Control Plane is a governance and management layer for autonomous AI agents. It treats the LLM as a raw compute component and provides a kernel-like layer for safe, controlled execution.
 
-## Key Features
-
-### Core Features
-- **Permission Management**: Fine-grained control over what agents can do
-- **Policy Enforcement**: Governance rules and compliance constraints
-- **Resource Management**: Quotas, rate limiting, and resource allocation
-- **Safe Execution**: Sandboxed execution with rollback capability
-- **Audit Logging**: Complete traceability for all agent actions
-- **Risk Assessment**: Automatic risk scoring and management
-
-### Advanced Features
-- **The Mute Agent**: Capability-based execution that returns NULL for out-of-scope requests
-- **Shadow Mode**: Simulation environment for validating agent behavior
-- **Constraint Graphs**: Multi-dimensional context (Data, Policy, Temporal)
-- **Supervisor Agents**: Recursive governance with agents watching agents
-- **Reasoning Telemetry**: Complete trace of agent decision-making
+For complete documentation, see the main [README](../README.md).
 
 ## Quick Links
 
 - [GitHub Repository](https://github.com/imran-siddique/agent-control-plane)
+- [PyPI Package](https://pypi.org/project/agent-control-plane/)
 - [Issue Tracker](https://github.com/imran-siddique/agent-control-plane/issues)
-- [Contributing Guidelines](../CONTRIBUTING.md)
-
-## Philosophy: Scale by Subtraction
-
-We need to stop treating the LLM as a magic box and start treating it as a raw compute component that requires a kernel.
-
-In distributed systems, we don't ask a microservice nicely to respect a rate limit—we enforce it at the gateway. We don't ask a database query nicely not to drop a table—we enforce it via permissions. With AI agents, we need the same deterministic enforcement.
-
-## Getting Help
-
-- Read the [Quick Start Guide](guides/QUICKSTART.md)
-- Check the [examples directory](../examples/)
-- Look at existing [tests](../tests/)
-- Open an [issue](https://github.com/imran-siddique/agent-control-plane/issues) on GitHub
+- [Research Paper](../paper/draft_main.md)
 
 ## License
 
