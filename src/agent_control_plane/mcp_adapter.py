@@ -114,7 +114,6 @@ class MCPAdapter:
         self.logger = logger or logging.getLogger("MCPAdapter")
         self.on_block = on_block
         
-        # Merge default mapping with custom mapping
         self.tool_mapping = DEFAULT_MCP_MAPPING.copy()
         if tool_mapping:
             self.tool_mapping.update({k.lower(): v for k, v in tool_mapping.items()})

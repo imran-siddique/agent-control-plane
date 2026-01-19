@@ -120,7 +120,6 @@ class A2AAdapter:
         self.logger = logger or logging.getLogger("A2AAdapter")
         self.on_block = on_block
         
-        # Merge default mapping with custom mapping
         self.capability_mapping = DEFAULT_A2A_MAPPING.copy()
         if capability_mapping:
             self.capability_mapping.update({k.lower(): v for k, v in capability_mapping.items()})

@@ -245,7 +245,6 @@ class VisionCapability:
         
         violations = []
         
-        # Check metadata for warnings
         if image.metadata.get("nsfw", False):
             violations.append("explicit")
         

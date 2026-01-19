@@ -132,7 +132,7 @@ services:
 
 ## Kubernetes Deployment
 
-For Kubernetes deployment, see `k8s/` directory (coming soon).
+For Kubernetes deployment examples, see the [Kubernetes Deployment section in ADVANCED_FEATURES.md](ADVANCED_FEATURES.md#kubernetes-deployment).
 
 ## Troubleshooting
 

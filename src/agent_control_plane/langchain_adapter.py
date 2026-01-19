@@ -124,7 +124,6 @@ class LangChainAdapter:
         self.logger = logger or logging.getLogger("LangChainAdapter")
         self.on_block = on_block
         
-        # Merge default mapping with custom mapping
         self.tool_mapping = DEFAULT_LANGCHAIN_TOOL_MAPPING.copy()
         if tool_mapping:
             self.tool_mapping.update({k.lower(): v for k, v in tool_mapping.items()})
