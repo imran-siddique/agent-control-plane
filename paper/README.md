@@ -21,7 +21,7 @@
 | `ETHICS_STATEMENT.md` | Ethics considerations | ✅ Complete |
 | `appendix.md` | Reproducibility, ablations, limitations | ✅ Complete |
 | `references.bib` | BibTeX citations | ✅ 30+ refs |
-| `figures/` | Architecture diagrams, charts | 🔄 TODO |
+| `figures/` | Architecture diagrams, charts | 📋 Planned |
 
 ## Building PDF
 

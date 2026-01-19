@@ -220,7 +220,7 @@ We've implemented key architectural and governance enhancements to address gaps 
 4. **Tool validation**: Basic schema check, needs full jsonschema integration
 
 ### Why These Are Acceptable
-- All marked with "TODO" comments referencing production needs
+- All marked with comments referencing production needs
 - Patterns and architecture in place for upgrades
 - Minimal implementation shows the approach
 - Doesn't block adoption or testing

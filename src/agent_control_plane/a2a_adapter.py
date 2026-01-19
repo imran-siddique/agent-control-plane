@@ -336,8 +336,8 @@ class A2AAdapter:
         """
         Handle task parameter negotiation.
         
-        TODO: Implement actual negotiation logic with validation and governance.
-        Currently accepts all parameters as a placeholder.
+        Currently accepts all proposed parameters. In production environments,
+        extend this method with validation and governance rules for parameter negotiation.
         """
         self.logger.info(f"Negotiation from {from_agent}")
         

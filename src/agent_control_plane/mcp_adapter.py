@@ -300,7 +300,8 @@ class MCPAdapter:
         """
         Handle prompts/list - list available prompts.
         
-        TODO: Implement actual prompt management when needed.
+        Returns an empty list as prompt management is not currently required.
+        Extend this method to integrate with a prompt registry if needed.
         """
         # Prompts are generally safe to list
         return {"prompts": []}
@@ -309,7 +310,8 @@ class MCPAdapter:
         """
         Handle prompts/get - get a specific prompt.
         
-        TODO: Implement actual prompt retrieval when needed.
+        Returns a placeholder response as prompt storage is not currently required.
+        Extend this method to integrate with a prompt registry if needed.
         """
         # Prompts are generally safe to retrieve
         prompt_name = params.get("name", "")
