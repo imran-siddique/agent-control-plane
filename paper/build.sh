@@ -6,7 +6,7 @@
 
 set -e
 
-echo "Building paper PDF..."
+echo "Building paper PDFs..."
 
 # Check for pandoc
 if ! command -v pandoc &> /dev/null; then
@@ -17,7 +17,7 @@ if ! command -v pandoc &> /dev/null; then
     exit 1
 fi
 
-# Build main paper
+# Build main paper (with author info - for arXiv)
 echo "Converting main.md to PDF..."
 pandoc main.md \
     -o paper.pdf \
@@ -32,6 +32,22 @@ pandoc main.md \
 
 echo "✓ Created paper.pdf"
 
+# Build anonymized paper (for double-blind review)
+if [ -f "main_anonymous.md" ]; then
+    echo "Converting main_anonymous.md to PDF..."
+    pandoc main_anonymous.md \
+        -o paper_anonymous.pdf \
+        --pdf-engine=xelatex \
+        -V geometry:margin=1in \
+        -V fontsize=11pt \
+        --toc \
+        --number-sections \
+        --bibliography=references.bib \
+        --citeproc \
+        2>/dev/null || pandoc main_anonymous.md -o paper_anonymous.pdf --pdf-engine=pdflatex -V geometry:margin=1in
+    echo "✓ Created paper_anonymous.pdf"
+fi
+
 # Build appendix if exists
 if [ -f "appendix.md" ]; then
     echo "Converting appendix.md to PDF..."
@@ -40,6 +56,8 @@ if [ -f "appendix.md" ]; then
         --pdf-engine=xelatex \
         -V geometry:margin=1in \
         -V fontsize=10pt \
+        --bibliography=references.bib \
+        --citeproc \
         2>/dev/null || pandoc appendix.md -o appendix.pdf --pdf-engine=pdflatex -V geometry:margin=1in
     echo "✓ Created appendix.pdf"
 fi

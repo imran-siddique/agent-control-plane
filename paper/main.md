@@ -180,6 +180,10 @@ To understand the contribution of each component, we performed systematic remova
 | No MuteAgent | 0.00% |  | 0.0 | Efficiency Only |
 | No SupervisorAgents | 0.00% |  | 0.1 | Multi-Agent Only |
 
+![Figure 4: Ablation Study Results](figures/ablation_chart.png)
+
+**Figure 4:** Component criticality analysis showing Safety Violation Rate when each component is removed. PolicyEngine removal causes catastrophic failure (d=8.7).
+
 * **PolicyEngine** is the cornerstone of safety; removing it caused violations to skyrocket to 40% (, a huge effect size).
 * **ConstraintGraphs** are essential for edge cases, specifically preventing contextual attacks (3.33% degradation when removed).
 * **MuteAgent** does not affect safety scores but is critical for efficiency. Removing it increased token usage by 5,160% (from 0.5 to 26.3 tokens).

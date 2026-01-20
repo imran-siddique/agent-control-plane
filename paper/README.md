@@ -11,14 +11,24 @@
 
 | File | Description |
 |------|-------------|
-| `main.md` | Full paper (~3,500 words) |
-| `main_anonymous.md` | Anonymized version for double-blind review |
+| `main.md` | Full paper in Markdown (~3,500 words) |
+| `main.tex` | Full paper in LaTeX (for arXiv) |
+| `main_anonymous.md` | Anonymized Markdown for double-blind review |
+| `main_anonymous.tex` | Anonymized LaTeX for double-blind review |
 | `appendix.md` | Reproducibility, ablations, limitations |
 | `PAPER_CHECKLIST.md` | Submission checklist |
 | `ETHICS_STATEMENT.md` | Ethics considerations |
 | `references.bib` | BibTeX citations (30+ refs) |
 | `build.sh` | Pandoc PDF build script |
-| `figures/` | Architecture diagrams, charts |
+| `figures/` | Architecture diagrams, charts (PNG/PDF) |
+
+### Generated Figures
+| Figure | File | Description |
+|--------|------|-------------|
+| Figure 1 | `figures/architecture.png` | ACP system architecture |
+| Figure 2 | `figures/constraint_graphs.png` | Multi-dimensional constraint validation |
+| Figure 3 | `figures/results_chart.png` | Main benchmark results |
+| Figure 4 | `figures/ablation_chart.png` | Ablation study results |
 
 ## Building PDF
 
