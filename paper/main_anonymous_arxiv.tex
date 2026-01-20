@@ -16,6 +16,7 @@
 \usepackage{listings}
 \usepackage{xcolor}
 \usepackage{enumitem}
+\usepackage{natbib}  % For citations (plainnat style)
 \usepackage{hyperref}
 \usepackage{url}
 
@@ -65,19 +66,19 @@ Ablation studies with statistical rigor (Welch's t-test, Bonferroni correction) 
 \label{sec:introduction}
 
 \subsection{The Agent Safety Crisis}
-The deployment of autonomous AI agents in enterprise environments has accelerated dramatically. Agents are no longer passive chat interfaces; they are active entities capable of executing consequential real-world actions: querying production databases, calling external APIs, modifying file systems, and orchestrating multi-step workflows~\cite{deloitte2025orchestration}. Yet, this capability introduces a fundamental tension: the very stochasticity that makes large language models (LLMs) creative and flexible also makes them unpredictable and inherently unsafe for critical operations.
+The deployment of autonomous AI agents in enterprise environments has accelerated dramatically. Agents are no longer passive chat interfaces; they are active entities capable of executing consequential real-world actions: querying production databases, calling external APIs, modifying file systems, and orchestrating multi-step workflows~\citep{deloitte2025orchestration}. Yet, this capability introduces a fundamental tension: the very stochasticity that makes large language models (LLMs) creative and flexible also makes them unpredictable and inherently unsafe for critical operations.
 
 Recent incidents highlight the severity of relying on probabilistic safety mechanisms:
 \begin{itemize}[nosep]
-    \item \textbf{Jailbreak vulnerabilities}: Adversarial prompts routinely bypass safety training. Techniques like ``DAN'' (Do Anything Now) and role-playing exploits achieve success rates exceeding 80\% on supposedly aligned models~\cite{wei2023jailbroken,zou2023universal}.
-    \item \textbf{Prompt injection attacks}: Malicious instructions embedded in retrieved documents or user inputs can hijack agent behavior, causing unintended data exfiltration or destructive actions~\cite{greshake2023not}.
+    \item \textbf{Jailbreak vulnerabilities}: Adversarial prompts routinely bypass safety training. Techniques like ``DAN'' (Do Anything Now) and role-playing exploits achieve success rates exceeding 80\% on supposedly aligned models~\citep{wei2023jailbroken,zou2023universal}.
+    \item \textbf{Prompt injection attacks}: Malicious instructions embedded in retrieved documents or user inputs can hijack agent behavior, causing unintended data exfiltration or destructive actions~\citep{greshake2023not}.
     \item \textbf{Capability overhang}: Agents granted broad permissions ``just in case'' often retain access to sensitive operations they should never execute, violating the principle of least privilege.
 \end{itemize}
 
 \subsection{``Vibes'' Are Not Engineering}
 Current mitigation strategies---prompt-based guardrails, output filtering, and advisory systems---share a fatal flaw: they treat safety as a \textit{suggestion} rather than an \textit{invariant}. They rely on ``vibes''---asking the model to ``please be helpful and harmless.'' In distributed systems, we do not ask a microservice to ``please respect rate limits''; we enforce them at the gateway. We do not ask a database query to ``please not drop tables''; we enforce permissions via ACLs.
 
-Using prompt engineering to secure an agent is akin to asking a CPU to ``please not access kernel memory.'' It is an architectural category error. To build reliable agentic systems, we must move from \textit{prompt engineering} to \textit{systems engineering}. For complementary research addressing reasoning failures through iterative refinement rather than hard constraints, see our concurrent preprint on runtime policy adaptation~\cite{anonymous2026companion}.
+Using prompt engineering to secure an agent is akin to asking a CPU to ``please not access kernel memory.'' It is an architectural category error. To build reliable agentic systems, we must move from \textit{prompt engineering} to \textit{systems engineering}. For complementary research addressing reasoning failures through iterative refinement rather than hard constraints, see our concurrent preprint on runtime policy adaptation~\citep{anonymous2026companion}.
 
 \subsection{The Solution: A Deterministic Kernel}
 We propose the \textbf{Agent Control Plane (ACP)}, a kernel-inspired architecture that mediates all access to resources. Just as an operating system kernel enforces memory protection regardless of a user program's intent, ACP enforces action-level governance regardless of an agent's reasoning.
@@ -103,16 +104,16 @@ We make the following contributions:
 \label{sec:related}
 
 \subsection{Guardrail Systems}
-Several systems attempt to add safety layers to LLM applications. \textbf{Guardrails AI}~\cite{guardrailsai2023} provides output validation through schema enforcement and semantic checks. \textbf{NeMo Guardrails}~\cite{nvidia2023nemo} uses dialog management to steer conversations away from harmful topics. \textbf{Llama Guard}~\cite{inan2023llamaguard} fine-tunes a classifier to detect unsafe content. However, all three operate at the \textit{content level}---they filter what agents say, not what they do. An agent could generate safe-sounding text while executing dangerous actions.
+Several systems attempt to add safety layers to LLM applications. \textbf{Guardrails AI}~\citep{guardrailsai2023} provides output validation through schema enforcement and semantic checks. \textbf{NeMo Guardrails}~\citep{nvidia2023nemo} uses dialog management to steer conversations away from harmful topics. \textbf{Llama Guard}~\citep{inan2023llamaguard} fine-tunes a classifier to detect unsafe content. However, all three operate at the \textit{content level}---they filter what agents say, not what they do. An agent could generate safe-sounding text while executing dangerous actions.
 
 \subsection{Agent Frameworks}
-Modern agent frameworks like \textbf{LangChain}~\cite{langchain2022}, \textbf{AutoGPT}~\cite{autogpt2023}, \textbf{AutoGen}~\cite{autogen2023}, and \textbf{CrewAI}~\cite{crewai2024} provide powerful orchestration capabilities but delegate safety to the underlying LLM or optional middleware. None implement deterministic action-level governance as a first-class primitive.
+Modern agent frameworks like \textbf{LangChain}~\citep{langchain2022}, \textbf{AutoGPT}~\citep{autogpt2023}, \textbf{AutoGen}~\citep{autogen2023}, and \textbf{CrewAI}~\citep{crewai2024} provide powerful orchestration capabilities but delegate safety to the underlying LLM or optional middleware. None implement deterministic action-level governance as a first-class primitive.
 
 \subsection{Agent Safety Evaluation}
-Recent benchmarks have emerged for evaluating agent safety. \textbf{MAESTRO}~\cite{maestro2025} provides a multi-agent evaluation framework focusing on coordination failures. \textbf{WildGuard}~\cite{wildguard2024} evaluates guardrails against in-the-wild adversarial inputs. The \textbf{Agent Safety Framework}~\cite{safety2024framework} proposes taxonomies for agent risks. Our work differs by providing a \textit{solution architecture} rather than an evaluation framework, though we adopt similar adversarial testing methodologies.
+Recent benchmarks have emerged for evaluating agent safety. \textbf{MAESTRO}~\citep{maestro2025} provides a multi-agent evaluation framework focusing on coordination failures. \textbf{WildGuard}~\citep{wildguard2024} evaluates guardrails against in-the-wild adversarial inputs. The \textbf{Agent Safety Framework}~\citep{safety2024framework} proposes taxonomies for agent risks. Our work differs by providing a \textit{solution architecture} rather than an evaluation framework, though we adopt similar adversarial testing methodologies.
 
 \subsection{Access Control Models}
-Attribute-Based Access Control (ABAC)~\cite{nist2014abac} has been the standard for fine-grained authorization in enterprise systems. We extend ABAC to agent contexts by treating agent identity, action type, target resource, and temporal context as attributes evaluated against deterministic policies.
+Attribute-Based Access Control (ABAC)~\citep{nist2014abac} has been the standard for fine-grained authorization in enterprise systems. We extend ABAC to agent contexts by treating agent identity, action type, target resource, and temporal context as attributes evaluated against deterministic policies.
 
 \section{System Design}
 \label{sec:design}
@@ -363,7 +364,7 @@ While ACP achieves zero violations in our benchmark, important limitations remai
     \item The ``silent failure'' model, while secure, reduces transparency. Organizations must balance security against user trust.
 \end{itemize}
 
-For a complementary approach addressing reasoning failures through runtime policy adaptation rather than hard constraints, see our concurrent work~\cite{anonymous2026companion}.
+For a complementary approach addressing reasoning failures through runtime policy adaptation rather than hard constraints, see our concurrent work~\citep{anonymous2026companion}.
 
 \section{Conclusion}
 \label{sec:conclusion}
