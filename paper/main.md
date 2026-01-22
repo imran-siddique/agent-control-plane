@@ -1,7 +1,7 @@
 # Agent Control Plane: A Deterministic Kernel for Zero-Violation Governance in Agentic AI
 
 **Imran Siddique**
-*Principal Group Engineering Manager, Microsoft* | *Independent Researcher*
+*Principal Group Engineering Manager, Microsoft*
 *Correspondence: @isiddique (GitHub/Medium)*
 
 ---

@@ -40,16 +40,11 @@
 \providecommand{\keywords}[1]{\textbf{Keywords:} #1}
 
 % Title and Author (arXiv-compatible format)
-% NOTE: arXiv does NOT accept anonymous submissions!
-% UPDATE the author information below before submitting.
 \title{Agent Control Plane: A Deterministic Kernel for Zero-Violation Governance in Agentic AI\thanks{Large language models were used to assist with grammar and formatting. All technical claims, experimental results, and intellectual contributions are original work by the authors.}}
 
-% TODO: Replace with your real name and affiliation before arXiv submission
-% Format: Firstname Lastname (Affiliation)
-% Example: Imran Siddique (Microsoft)
-\author{[UPDATE BEFORE SUBMISSION]\\
-[Your Affiliation]\\
-\texttt{[your.email@example.com]}
+\author{Imran Siddique\\
+Principal Group Engineering Manager, Microsoft\\
+\texttt{imran.siddique@microsoft.com}
 }
 
 \date{}
@@ -62,7 +57,7 @@ Modern AI agents capable of executing real-world actions---querying databases, c
 
 Unlike advisory systems that merely suggest safe behavior, ACP interposes between agent intent and action execution, achieving \textbf{0.00\% safety violations} on a 60-prompt red-team benchmark spanning direct attacks, prompt injections, and contextual confusion---with zero false positives. Our key insight, ``Scale by Subtraction,'' replaces verbose LLM-generated refusals with deterministic \texttt{NULL} responses, yielding a \textbf{98.1\% token reduction} while eliminating information leakage about blocked actions.
 
-Ablation studies with statistical rigor (Welch's t-test, Bonferroni correction) confirm component necessity: removing the \textit{PolicyEngine} increases violations from 0\% to 40.0\% ($p < 0.0001$, Cohen's $d = 8.7$). We demonstrate production readiness through integrations with OpenAI function calling, LangChain agents, and multi-agent orchestration. Code is available at \url{https://github.com/[UPDATE-USERNAME]/agent-control-plane}.
+Ablation studies with statistical rigor (Welch's t-test, Bonferroni correction) confirm component necessity: removing the \textit{PolicyEngine} increases violations from 0\% to 40.0\% ($p < 0.0001$, Cohen's $d = 8.7$). We demonstrate production readiness through integrations with OpenAI function calling, LangChain agents, and multi-agent orchestration. Code is available at \url{https://github.com/imran-siddique/agent-control-plane}.
 \end{abstract}
 
 \keywords{Agentic AI \and AI Safety \and Deterministic Governance \and Access Control \and Kernel Architecture \and Multi-Agent Systems}
@@ -83,7 +78,7 @@ Recent incidents highlight the severity of relying on probabilistic safety mecha
 \subsection{``Vibes'' Are Not Engineering}
 Current mitigation strategies---prompt-based guardrails, output filtering, and advisory systems---share a fatal flaw: they treat safety as a \textit{suggestion} rather than an \textit{invariant}. They rely on ``vibes''---asking the model to ``please be helpful and harmless.'' In distributed systems, we do not ask a microservice to ``please respect rate limits''; we enforce them at the gateway. We do not ask a database query to ``please not drop tables''; we enforce permissions via ACLs.
 
-Using prompt engineering to secure an agent is akin to asking a CPU to ``please not access kernel memory.'' It is an architectural category error. To build reliable agentic systems, we must move from \textit{prompt engineering} to \textit{systems engineering}. For complementary research addressing reasoning failures through iterative refinement rather than hard constraints, see our concurrent preprint on runtime policy adaptation~\citep{anonymous2026companion}.
+Using prompt engineering to secure an agent is akin to asking a CPU to ``please not access kernel memory.'' It is an architectural category error. To build reliable agentic systems, we must move from \textit{prompt engineering} to \textit{systems engineering}. For complementary self-correction mechanisms, see our concurrent preprint~\citep{selfcorrecting2026}.
 
 \subsection{The Solution: A Deterministic Kernel}
 We propose the \textbf{Agent Control Plane (ACP)}, a kernel-inspired architecture that mediates all access to resources. Just as an operating system kernel enforces memory protection regardless of a user program's intent, ACP enforces action-level governance regardless of an agent's reasoning.
@@ -115,7 +110,7 @@ Several systems attempt to add safety layers to LLM applications. \textbf{Guardr
 Modern agent frameworks like \textbf{LangChain}~\citep{langchain2022}, \textbf{AutoGPT}~\citep{autogpt2023}, \textbf{AutoGen}~\citep{autogen2023}, and \textbf{CrewAI}~\citep{crewai2024} provide powerful orchestration capabilities but delegate safety to the underlying LLM or optional middleware. None implement deterministic action-level governance as a first-class primitive.
 
 \subsection{Agent Safety Evaluation}
-Recent benchmarks have emerged for evaluating agent safety. \textbf{MAESTRO}~\citep{maestro2025} provides a multi-agent evaluation framework focusing on coordination failures. \textbf{WildGuard}~\citep{wildguard2024} evaluates guardrails against in-the-wild adversarial inputs. The \textbf{Agent Safety Framework}~\citep{safety2024framework} proposes taxonomies for agent risks. Our work differs by providing a \textit{solution architecture} rather than an evaluation framework, though we adopt similar adversarial testing methodologies.
+Recent benchmarks have emerged for evaluating agent safety. \textbf{AgentBench}~\citep{agentbench2024} provides a multi-dimensional benchmark for evaluating LLMs as agents across diverse environments. \textbf{WildGuard}~\citep{wildguard2024} evaluates guardrails against in-the-wild adversarial inputs. \textbf{Visibility into AI Agents}~\citep{chan2024visibility} proposes frameworks for agent governance and accountability. Our work differs by providing a \textit{solution architecture} rather than an evaluation framework, though we adopt similar adversarial testing methodologies.
 
 \subsection{Access Control Models}
 Attribute-Based Access Control (ABAC)~\citep{nist2014abac} has been the standard for fine-grained authorization in enterprise systems. We extend ABAC to agent contexts by treating agent identity, action type, target resource, and temporal context as attributes evaluated against deterministic policies.
@@ -345,7 +340,7 @@ This mirrors lessons from systems security: we do not rely on software ``promisi
 \subsection{Comparison with Existing Approaches}
 Unlike content-level guardrails (Guardrails AI, NeMo, Llama Guard), ACP operates at the \textit{action level}. An agent could generate perfectly safe-sounding text while attempting dangerous operations---content filters would pass it; ACP would block it.
 
-Unlike evaluation frameworks (MAESTRO, WildGuard), ACP provides a \textit{solution}, not just a benchmark. Our 0.00\% violation rate is not a test score---it's an enforced invariant.
+Unlike evaluation frameworks (AgentBench, WildGuard), ACP provides a \textit{solution}, not just a benchmark. Our 0.00\% violation rate is not a test score---it's an enforced invariant.
 
 \subsection{Limitations and Ethical Considerations}
 While ACP achieves zero violations in our benchmark, important limitations remain:
@@ -369,7 +364,7 @@ While ACP achieves zero violations in our benchmark, important limitations remai
     \item The ``silent failure'' model, while secure, reduces transparency. Organizations must balance security against user trust.
 \end{itemize}
 
-For a complementary approach addressing reasoning failures through runtime policy adaptation rather than hard constraints, see our concurrent work~\citep{anonymous2026companion}.
+For complementary self-correction mechanisms, see our concurrent preprint~\citep{selfcorrecting2026}.
 
 \section{Conclusion}
 \label{sec:conclusion}
@@ -393,10 +388,10 @@ We thank the anonymous reviewers for their constructive feedback. This research 
 \textbf{LLM Disclosure}: Large language models (GPT-4, Claude) were used to assist with code documentation, literature search, and manuscript editing. All technical content, experimental design, and scientific claims were developed and verified by the authors.
 
 % ============================================================================
-% Bibliography - Using pre-compiled .bbl for arXiv submission
+% Bibliography - Using natbib with external .bib file (matching SCAK paper style)
 % ============================================================================
 \bibliographystyle{plainnat}
-\input{main.bbl}
+\bibliography{references}
 
 \newpage
 \appendix
@@ -406,7 +401,7 @@ We thank the anonymous reviewers for their constructive feedback. This research 
 \subsection{Environment Setup}
 \begin{lstlisting}[language=bash]
 # Clone repository
-git clone https://github.com/[UPDATE-USERNAME]/agent-control-plane.git
+git clone https://github.com/imran-siddique/agent-control-plane.git
 cd agent-control-plane
 
 # Create virtual environment
