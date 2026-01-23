@@ -1,3 +1,12 @@
+# Agent Control Plane - PyPI Publishing Workflow
+# 
+# This workflow uses PyPI Trusted Publishing (OIDC) for secure, tokenless authentication.
+# See: https://docs.pypi.org/trusted-publishers/
+#
+# Setup Required:
+# 1. Go to PyPI.org → Your Project → Settings → Publishing → Add Trusted Publisher
+# 2. Enter: GitHub owner, repo name, workflow filename, and environment name
+#
 name: Publish to PyPI
 
 on:
@@ -5,23 +14,34 @@ on:
     types: [published]
   workflow_dispatch:
     inputs:
-      test_pypi:
-        description: 'Publish to Test PyPI instead of PyPI'
-        required: false
-        type: boolean
-        default: false
+      target:
+        description: 'Target repository'
+        required: true
+        type: choice
+        options:
+          - testpypi
+          - pypi
+        default: testpypi
+
+# Ensure only one publish job runs at a time
+concurrency:
+  group: publish-${{ github.ref }}
+  cancel-in-progress: false
 
 jobs:
   build:
+    name: Build Distribution 📦
     runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
     
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
       with:
         fetch-depth: 0
     
     - name: Set up Python
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
         python-version: '3.11'
     
@@ -30,24 +50,97 @@ jobs:
         python -m pip install --upgrade pip
         pip install build twine
     
+    - name: Extract version
+      id: version
+      run: |
+        VERSION=$(python -c "import tomllib; print(tomllib.load(open('pyproject.toml', 'rb'))['project']['version'])")
+        echo "version=$VERSION" >> $GITHUB_OUTPUT
+        echo "📦 Building version: $VERSION"
+    
     - name: Build package
       run: python -m build
     
     - name: Check package
-      run: twine check dist/* || echo "Note: twine check may show warnings about license-file field. This is a known issue and the package will upload successfully to PyPI."
-    
-    - name: Publish to Test PyPI
-      if: github.event_name == 'workflow_dispatch' && inputs.test_pypi
-      env:
-        TWINE_USERNAME: __token__
-        TWINE_PASSWORD: ${{ secrets.TEST_PYPI_API_TOKEN }}
       run: |
-        twine upload --repository testpypi dist/*
+        twine check dist/*
+        echo "📋 Built packages:"
+        ls -la dist/
+    
+    - name: Upload artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: python-package-distributions
+        path: dist/
+        retention-days: 5
+
+  publish-testpypi:
+    name: Publish to TestPyPI 🧪
+    needs: build
+    if: github.event_name == 'workflow_dispatch' && inputs.target == 'testpypi'
+    runs-on: ubuntu-latest
+    environment:
+      name: testpypi
+      url: https://test.pypi.org/project/agent-control-plane/${{ needs.build.outputs.version }}
+    
+    permissions:
+      id-token: write  # Required for OIDC trusted publishing
+    
+    steps:
+    - name: Download artifact
+      uses: actions/download-artifact@v4
+      with:
+        name: python-package-distributions
+        path: dist/
+    
+    - name: Publish to TestPyPI
+      uses: pypa/gh-action-pypi-publish@release/v1
+      with:
+        repository-url: https://test.pypi.org/legacy/
+        print-hash: true
+        verbose: true
+
+  publish-pypi:
+    name: Publish to PyPI 🚀
+    needs: build
+    if: github.event_name == 'release' || (github.event_name == 'workflow_dispatch' && inputs.target == 'pypi')
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/project/agent-control-plane/${{ needs.build.outputs.version }}
+    
+    permissions:
+      id-token: write  # Required for OIDC trusted publishing
+    
+    steps:
+    - name: Download artifact
+      uses: actions/download-artifact@v4
+      with:
+        name: python-package-distributions
+        path: dist/
     
     - name: Publish to PyPI
-      if: github.event_name == 'release' || (github.event_name == 'workflow_dispatch' && !inputs.test_pypi)
-      env:
-        TWINE_USERNAME: __token__
-        TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
-      run: |
-        twine upload dist/*
+      uses: pypa/gh-action-pypi-publish@release/v1
+      with:
+        print-hash: true
+        verbose: true
+
+  github-release-assets:
+    name: Upload to GitHub Release 📎
+    needs: [build, publish-pypi]
+    if: github.event_name == 'release'
+    runs-on: ubuntu-latest
+    
+    permissions:
+      contents: write
+    
+    steps:
+    - name: Download artifact
+      uses: actions/download-artifact@v4
+      with:
+        name: python-package-distributions
+        path: dist/
+    
+    - name: Upload to GitHub Release
+      uses: softprops/action-gh-release@v1
+      with:
+        files: dist/*

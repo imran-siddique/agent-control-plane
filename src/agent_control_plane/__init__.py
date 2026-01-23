@@ -189,8 +189,23 @@ from .observability import (
     create_observability_suite,
 )
 
+# Hugging Face Hub utilities (optional - requires huggingface_hub)
+try:
+    from .hf_utils import (
+        HFConfig,
+        download_red_team_dataset,
+        upload_dataset,
+        upload_experiment_logs,
+        list_experiment_logs,
+        ModelCardInfo,
+        create_model_card,
+    )
+    _HF_AVAILABLE = True
+except ImportError:
+    _HF_AVAILABLE = False
+
 __version__ = "1.2.0"
-__author__ = "Agent Control Plane Contributors"
+__author__ = "Imran Siddique"
 
 __all__ = [
     # Main interface
@@ -346,4 +361,26 @@ __all__ = [
     "ExecutionEngine",
     "ExecutionContext",
     "ExecutionMetrics",
+    
+    # Hugging Face Hub utilities (optional)
+    "HFConfig",
+    "download_red_team_dataset",
+    "upload_dataset",
+    "upload_experiment_logs",
+    "list_experiment_logs",
+    "ModelCardInfo",
+    "create_model_card",
 ]
+
+# Conditionally remove HF exports if not available
+if not _HF_AVAILABLE:
+    _hf_exports = [
+        "HFConfig",
+        "download_red_team_dataset",
+        "upload_dataset",
+        "upload_experiment_logs",
+        "list_experiment_logs",
+        "ModelCardInfo",
+        "create_model_card",
+    ]
+    __all__ = [x for x in __all__ if x not in _hf_exports]

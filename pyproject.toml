@@ -5,26 +5,51 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "agent-control-plane"
 version = "1.2.0"
-description = "Layer 3: The Framework - A governance and management layer for autonomous AI agents"
+description = "Layer 3: The Framework - A deterministic kernel for zero-violation governance in agentic AI systems"
 readme = "README.md"
 requires-python = ">=3.8"
 license = "MIT"
 authors = [
-    {name = "Agent Control Plane Contributors"},
+    {name = "Imran Siddique", email = "imran.siddique@microsoft.com"},
 ]
-keywords = ["ai", "agents", "governance", "control-plane", "safety", "policy", "framework"]
+maintainers = [
+    {name = "Imran Siddique", email = "imran.siddique@microsoft.com"},
+]
+keywords = [
+    "ai",
+    "agents",
+    "governance",
+    "control-plane",
+    "safety",
+    "policy",
+    "framework",
+    "agentic-ai",
+    "llm",
+    "guardrails",
+    "deterministic",
+    "kernel",
+]
 classifiers = [
-    "Development Status :: 3 - Alpha",
+    "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
     "Topic :: Software Development :: Libraries :: Python Modules",
     "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Security",
+    "Topic :: System :: Systems Administration",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Typing :: Typed",
 ]
+
+# Core dependencies - standard library only for zero external deps
+dependencies = []
 
 [project.urls]
 Homepage = "https://github.com/imran-siddique/agent-control-plane"
@@ -40,6 +65,13 @@ dev = [
     "black>=23.0.0",
     "flake8>=6.0.0",
     "mypy>=1.0.0",
+    "pre-commit>=3.0.0",
+]
+
+# Hugging Face Hub integration (for datasets and model cards)
+hf = [
+    "huggingface_hub>=0.20.0",
+    "datasets>=2.14.0",
 ]
 
 # Allowed Layer 2 protocol dependencies (optional integrations)
