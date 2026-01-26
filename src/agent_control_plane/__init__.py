@@ -194,7 +194,7 @@ from .agent_hibernation import (
     HibernationManager,
     HibernationConfig,
     HibernationFormat,
-    AgentState,
+    AgentState as HibernationAgentState,
     HibernatedAgentMetadata,
 )
 
@@ -206,6 +206,74 @@ from .time_travel_debugger import (
     ReplayEvent,
     ReplayEventType,
     ReplaySession,
+)
+
+# Lifecycle Management (v0.2.0 - Agent Runtime Features)
+from .lifecycle import (
+    # Enhanced Control Plane
+    EnhancedAgentControlPlane,
+    AgentControlPlaneV2,
+    create_control_plane,
+    
+    # Health Monitoring (ACP-001)
+    HealthMonitor,
+    HealthCheckConfig,
+    HealthCheckResult,
+    HealthCheckable,
+    HealthStatus,
+    
+    # Auto-Recovery (ACP-002)
+    AutoRecoveryManager,
+    RecoveryConfig,
+    RecoveryEvent,
+    
+    # Circuit Breaker (ACP-003)
+    CircuitBreaker,
+    CircuitBreakerConfig,
+    CircuitBreakerMetrics,
+    CircuitBreakerRegistry,
+    CircuitBreakerOpenError,
+    CircuitState,
+    
+    # Scaling (ACP-004)
+    AgentScaler,
+    ScalingConfig,
+    AgentReplica,
+    
+    # Distributed Coordination (ACP-005)
+    DistributedCoordinator,
+    LeaderElectionConfig,
+    LeaderInfo,
+    CoordinationRole,
+    
+    # Dependency Graph (ACP-006)
+    DependencyGraph,
+    AgentDependency,
+    
+    # Graceful Shutdown (ACP-007)
+    GracefulShutdownManager,
+    ShutdownConfig,
+    InFlightOperation,
+    ShutdownPhase,
+    
+    # Resource Quotas (ACP-008)
+    ResourceQuotaManager,
+    AgentResourceQuota,
+    ResourceUsage,
+    
+    # Agent Observability (ACP-009)
+    AgentObservabilityProvider,
+    AgentMetric,
+    AgentLogEntry,
+    
+    # Hot Reload (ACP-010)
+    HotReloadManager,
+    HotReloadConfig,
+    ReloadEvent,
+    
+    # Agent State
+    AgentState,
+    AgentRegistration,
 )
 
 # Hugging Face Hub utilities (optional - requires huggingface_hub)
@@ -223,7 +291,7 @@ try:
 except ImportError:
     _HF_AVAILABLE = False
 
-__version__ = "1.2.0"
+__version__ = "0.2.0"
 __author__ = "Imran Siddique"
 
 __all__ = [
@@ -232,6 +300,73 @@ __all__ = [
     "create_read_only_agent",
     "create_standard_agent",
     "create_admin_agent",
+    
+    # ===== Lifecycle Management (v0.2.0) =====
+    
+    # Enhanced Control Plane
+    "EnhancedAgentControlPlane",
+    "AgentControlPlaneV2",
+    "create_control_plane",
+    
+    # Health Monitoring (ACP-001)
+    "HealthMonitor",
+    "HealthCheckConfig",
+    "HealthCheckResult",
+    "HealthCheckable",
+    "HealthStatus",
+    
+    # Auto-Recovery (ACP-002)
+    "AutoRecoveryManager",
+    "RecoveryConfig",
+    "RecoveryEvent",
+    
+    # Circuit Breaker (ACP-003)
+    "CircuitBreaker",
+    "CircuitBreakerConfig",
+    "CircuitBreakerMetrics",
+    "CircuitBreakerRegistry",
+    "CircuitBreakerOpenError",
+    "CircuitState",
+    
+    # Scaling (ACP-004)
+    "AgentScaler",
+    "ScalingConfig",
+    "AgentReplica",
+    
+    # Distributed Coordination (ACP-005)
+    "DistributedCoordinator",
+    "LeaderElectionConfig",
+    "LeaderInfo",
+    "CoordinationRole",
+    
+    # Dependency Graph (ACP-006)
+    "DependencyGraph",
+    "AgentDependency",
+    
+    # Graceful Shutdown (ACP-007)
+    "GracefulShutdownManager",
+    "ShutdownConfig",
+    "InFlightOperation",
+    "ShutdownPhase",
+    
+    # Resource Quotas (ACP-008)
+    "ResourceQuotaManager",
+    "AgentResourceQuota",
+    "ResourceUsage",
+    
+    # Agent Observability (ACP-009)
+    "AgentObservabilityProvider",
+    "AgentMetric",
+    "AgentLogEntry",
+    
+    # Hot Reload (ACP-010)
+    "HotReloadManager",
+    "HotReloadConfig",
+    "ReloadEvent",
+    
+    # Agent State
+    "AgentState",
+    "AgentRegistration",
     
     # ===== Layer 3: Interfaces for Dependency Injection =====
     
@@ -352,6 +487,21 @@ __all__ = [
     "AlertSeverity",
     "create_observability_suite",
     
+    # Agent Hibernation - Serverless Agents
+    "HibernationManager",
+    "HibernationConfig",
+    "HibernationFormat",
+    "HibernationAgentState",
+    "HibernatedAgentMetadata",
+    
+    # Time-Travel Debugging
+    "TimeTravelDebugger",
+    "TimeTravelConfig",
+    "ReplayMode",
+    "ReplayEvent",
+    "ReplayEventType",
+    "ReplaySession",
+    
     # Kernel
     "AgentKernel",
     "AgentContext",
@@ -380,21 +530,6 @@ __all__ = [
     "ExecutionEngine",
     "ExecutionContext",
     "ExecutionMetrics",
-    
-    # Agent Hibernation (Serverless Agents)
-    "HibernationManager",
-    "HibernationConfig",
-    "HibernationFormat",
-    "AgentState",
-    "HibernatedAgentMetadata",
-    
-    # Time-Travel Debugging
-    "TimeTravelDebugger",
-    "TimeTravelConfig",
-    "ReplayMode",
-    "ReplayEvent",
-    "ReplayEventType",
-    "ReplaySession",
     
     # Hugging Face Hub utilities (optional)
     "HFConfig",
